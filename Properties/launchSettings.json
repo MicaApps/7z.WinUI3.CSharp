@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "7zip (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "7zip (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
