@@ -12,7 +12,7 @@
     Height="140"
     mc:Ignorable="d">
     <Window.SystemBackdrop>
-        <MicaBackdrop />
+        <DesktopAcrylicBackdrop></DesktopAcrylicBackdrop>
     </Window.SystemBackdrop>
     <Grid MinHeight="200">
         <Grid.RowDefinitions>
@@ -30,17 +30,30 @@
                 Source="Assets/AppLogo.ico" />
             <TextBlock x:Name="TextBlock" Text="解压缩" />
         </StackPanel>
-        <StackPanel Grid.Row="1" Margin="32 0 23 32">
+        <StackPanel Grid.Row="1" Margin="32,0,23,32">
             <Grid>
-                <TextBlock x:Name="TitleTextBlock" Text="提取 比特彗星(BitComet)-v1.75 隐藏功能解锁版" VerticalAlignment="Center"/>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <AppBarButton Icon="Pause" Width="40" Height="48"/>
-                    <AppBarButton Icon="Cancel" Width="40" Height="48"/>
+                <TextBlock
+                    x:Name="TitleTextBlock"
+                    VerticalAlignment="Center"
+                    Text="提取 比特彗星(BitComet)-v1.75 隐藏功能解锁版" />
+                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                    <AppBarButton
+                        Width="40"
+                        Height="48"
+                        Icon="Pause" />
+                    <AppBarButton
+                        Width="40"
+                        Height="48"
+                        Icon="Cancel" />
                 </StackPanel>
             </Grid>
-            
-            <Border Height="9"></Border>
-            <ProgressBar ShowPaused="False" ShowError="False" Value="80"/>
+
+            <Border Height="9" />
+            <ProgressBar
+                x:Name="ProgressBar"
+                ShowError="False"
+                ShowPaused="False"
+                Value="80" />
         </StackPanel>
     </Grid>
 

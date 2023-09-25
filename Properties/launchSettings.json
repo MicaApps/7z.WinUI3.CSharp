@@ -4,7 +4,8 @@
       "commandName": "MsixPackage"
     },
     "7zip (Unpackaged)": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Users\\15970\\source\\repos\\7z.WinUI3.CSharp\\bin\\x64\\Debug\\net6.0-windows10.0.19041.0\\AppX\r\n"
     }
   }
 }
