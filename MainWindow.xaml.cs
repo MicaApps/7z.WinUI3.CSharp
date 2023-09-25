@@ -14,7 +14,7 @@ namespace _7zip;
 /// <summary>
 /// An empty window that can be used on its own or navigated to within a Frame.
 /// </summary>
-public sealed partial class MainWindow 
+public sealed partial class MainWindow
 {
     // µ¼Èë Win32 API º¯Êý
     [DllImport("user32.dll", SetLastError = true)]
@@ -22,6 +22,7 @@ public sealed partial class MainWindow
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool InsertMenu(IntPtr hMenu, uint uPosition, uint uFlags, uint uIDNewItem, string lpNewItem);
+
     public MainWindow()
     {
         InitializeComponent();
@@ -32,9 +33,19 @@ public sealed partial class MainWindow
         var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
         var appWindow = AppWindow.GetFromWindowId(windowId);
         appWindow?.SetIcon("Assets\\AppLogo.ico");
+        GetAppWindowAndPresenter();
+        _presenter.IsResizable = false;
+        _presenter.IsMaximizable = false;
     }
 
+    private AppWindow _apw;
+    private OverlappedPresenter _presenter;
 
-
-    
+    public void GetAppWindowAndPresenter()
+    {
+        var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+        WindowId myWndId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+        _apw = AppWindow.GetFromWindowId(myWndId);
+        _presenter = _apw.Presenter as OverlappedPresenter;
+    }
 }
