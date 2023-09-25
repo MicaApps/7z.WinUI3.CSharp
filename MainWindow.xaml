@@ -27,7 +27,7 @@
                 Width="16"
                 Height="16"
                 Margin="8,0"
-                Source="Assets/AppLogo.ico" />
+                Source="Assets/AppIcon.ico" />
             <TextBlock x:Name="TextBlock" Text="解压缩" />
         </StackPanel>
         <StackPanel Grid.Row="1" Margin="32,0,23,32">
