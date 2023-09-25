@@ -14,8 +14,7 @@ public sealed partial class MainWindow
         Title = AppWindow.Title;
         var manager = WindowManager.Get(this);
         this.SetIcon("Assets\\AppIcon.ico");
-        manager.IsMaximizable = false;
         manager.IsResizable = false;
-        // this.SetWindowStyle(WindowStyle.OverlappedWindow);
+        this.SetWindowStyle(WindowStyle.MinimizeBox|WindowStyle.Caption);
     }
 }

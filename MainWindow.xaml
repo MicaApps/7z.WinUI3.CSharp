@@ -10,6 +10,8 @@
     xmlns:winUiEx="using:WinUIEx"
     Width="500"
     Height="140"
+    MaxHeight="140"
+    MaxWidth="500"
     mc:Ignorable="d">
     <Window.SystemBackdrop>
         <DesktopAcrylicBackdrop></DesktopAcrylicBackdrop>
