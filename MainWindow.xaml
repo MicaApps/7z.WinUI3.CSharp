@@ -9,12 +9,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winUiEx="using:WinUIEx"
     Width="500"
-    Height="120"
+    Height="140"
     mc:Ignorable="d">
     <Window.SystemBackdrop>
         <MicaBackdrop />
     </Window.SystemBackdrop>
-    <Grid>
+    <Grid MinHeight="200">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -30,13 +30,16 @@
                 Source="Assets/AppLogo.ico" />
             <TextBlock x:Name="TextBlock" Text="解压缩" />
         </StackPanel>
-        <StackPanel Grid.Row="1" Margin="32,16">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock x:Name="TitleTextBlock" Text="提取 比特彗星(BitComet)-v1.75 隐藏功能解锁版" />
-                <FontIcon Margin="32,0" Glyph="&#xE769;" />
-                <FontIcon Glyph="&#xE8BB;" />
-            </StackPanel>
-            <Border Height="5"></Border>
+        <StackPanel Grid.Row="1" Margin="32 0 23 32">
+            <Grid>
+                <TextBlock x:Name="TitleTextBlock" Text="提取 比特彗星(BitComet)-v1.75 隐藏功能解锁版" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <AppBarButton Icon="Pause" Width="40" Height="48"/>
+                    <AppBarButton Icon="Cancel" Width="40" Height="48"/>
+                </StackPanel>
+            </Grid>
+            
+            <Border Height="9"></Border>
             <ProgressBar ShowPaused="False" ShowError="False" Value="80"/>
         </StackPanel>
     </Grid>
