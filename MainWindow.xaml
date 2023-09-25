@@ -40,7 +40,7 @@
             </Grid>
             
             <Border Height="9"></Border>
-            <ProgressBar ShowPaused="False" ShowError="False" Value="80"/>
+            <ProgressBar ShowPaused="False" ShowError="False" Value="80" x:Name="ProgressBar"/>
         </StackPanel>
     </Grid>
 
