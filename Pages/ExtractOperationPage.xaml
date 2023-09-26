@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="_7zip.Pages.ExtractOperationPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:_7zip.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:_7zip.ViewModels"
+    d:DataContext="{d:DesignInstance Type=vm:ExtractionViewModel}"
+    Background="Transparent"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <vm:PathToFileNameConverter x:Key="PathToFileNameConverter" />
+    </Page.Resources>
+    <!--  Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"  -->
+
+
+    <Grid MinHeight="200">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel
+            Grid.Row="0"
+            Margin="8"
+            Orientation="Horizontal"
+            Spacing="6">
+            <ImageIcon
+                Width="16"
+                Height="16"
+                Margin="8,0"
+                Source="/Assets/AppIcon.ico" />
+            <TextBlock x:Name="titleTxtBlock" Text="解压缩" />
+            <TextBlock Foreground="{ThemeResource SystemBaseMediumColor}" Text="-" />
+            <TextBlock Foreground="{ThemeResource SystemBaseMediumColor}" Text="{Binding ArchivePath, Converter={StaticResource PathToFileNameConverter}}" />
+        </StackPanel>
+        <StackPanel Grid.Row="1" Margin="32,10,23,32">
+            <Grid>
+                <StackPanel Orientation="Horizontal" Spacing="5">
+                    <TextBlock Text="正在解压" />
+                    <TextBlock Foreground="{ThemeResource SystemBaseMediumHighColor}" Text="{Binding CurrentExtractingFileName}" />
+                </StackPanel>
+
+
+                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                    <AppBarButton
+                        Width="40"
+                        Height="48"
+                        Icon="Pause" />
+                    <AppBarButton
+                        Width="40"
+                        Height="48"
+                        Icon="Cancel" />
+                </StackPanel>
+            </Grid>
+
+            <Border Height="9" />
+            <ProgressBar
+                x:Name="ProgressBar"
+                Maximum="1"
+                ShowError="False"
+                ShowPaused="False"
+                Value="{Binding ExtractPercentage}" />
+        </StackPanel>
+    </Grid>
+</Page>

@@ -13,6 +13,10 @@
     <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Content Remove="Assets\7z.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Pages\ExtractOperationPage.xaml" />
     <None Remove="Pages\MainPage.xaml" />
     <None Remove="Windows\OperationWindow.xaml" />
   </ItemGroup>
@@ -45,6 +49,16 @@
   -->
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Assets\7z.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\ExtractOperationPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Pages\MainPage.xaml">

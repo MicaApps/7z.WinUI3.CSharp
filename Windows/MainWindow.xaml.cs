@@ -1,6 +1,8 @@
+using _7zip.ViewModels;
 using _7zip.Windows;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using System.IO;
 using WinUIEx;
 
 
@@ -15,10 +17,21 @@ public sealed partial class MainWindow
         this.SetIcon("Assets\\AppIcon.ico");
         ExtendsContentIntoTitleBar = true;
         Title = AppWindow.Title;
+       
     }
 
     private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
     {
-        new OperationWindow().Activate();
+        //创建ViewModel
+        ExtractionViewModel viewModel = new ExtractionViewModel(archivePathTxtBox.Text);
+        viewModel.OutputDirPath = outputPathTxtBox.Text;
+
+        //设置ViewModel
+        var window = new OperationWindow();
+        (window.Content as FrameworkElement).DataContext = viewModel;
+        window.Activate();
+
+        //开始解压
+        viewModel.ExtractAsync();
     }
 }

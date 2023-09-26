@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:_7zip.Windows"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:pages="using:_7zip.Pages"
     xmlns:winUiEx="using:WinUIEx"
     Width="500"
     Height="140"
@@ -14,46 +15,5 @@
     <Window.SystemBackdrop>
         <DesktopAcrylicBackdrop />
     </Window.SystemBackdrop>
-    <Grid MinHeight="200">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <StackPanel
-            Grid.Row="0"
-            Margin="8"
-            Orientation="Horizontal">
-            <ImageIcon
-                Width="16"
-                Height="16"
-                Margin="8,0"
-                Source="/Assets/AppIcon.ico" />
-            <TextBlock x:Name="TextBlock" Text="解压缩" />
-        </StackPanel>
-        <StackPanel Grid.Row="1" Margin="32,0,23,32">
-            <Grid>
-                <TextBlock
-                    x:Name="TitleTextBlock"
-                    VerticalAlignment="Center"
-                    Text="提取 比特彗星(BitComet)-v1.75 隐藏功能解锁版" />
-                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                    <AppBarButton
-                        Width="40"
-                        Height="48"
-                        Icon="Pause" />
-                    <AppBarButton
-                        Width="40"
-                        Height="48"
-                        Icon="Cancel" />
-                </StackPanel>
-            </Grid>
-
-            <Border Height="9" />
-            <ProgressBar
-                x:Name="ProgressBar"
-                ShowError="False"
-                ShowPaused="False"
-                Value="80" />
-        </StackPanel>
-    </Grid>
+    <pages:ExtractOperationPage />
 </winUiEx:WindowEx>

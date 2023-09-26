@@ -26,7 +26,7 @@
             <ImageIcon
                 Width="16"
                 Height="16"
-                Margin="4 0 8 0"
+                Margin="4,0,8,0"
                 Source="/Assets/AppIcon.ico" />
             <TextBlock x:Name="TextBlock" Text="7Zip" />
         </StackPanel>
@@ -84,10 +84,16 @@
                 </AppBarButton.Icon>
             </AppBarButton>
         </CommandBar>
-        <StackPanel Grid.Row="3"
-                    VerticalAlignment="Center"
-                    HorizontalAlignment="Center">
-            <Button Content="新窗口" Click="ButtonBase_OnClick"></Button>
+        <StackPanel
+            Grid.Row="3"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Orientation="Vertical">
+            <TextBlock Text="测试：将" />
+            <TextBox x:Name="archivePathTxtBox" Width="900" />
+            <TextBlock Text="解压到" />
+            <TextBox x:Name="outputPathTxtBox" Width="900" />
+            <Button Click="ButtonBase_OnClick" Content="新窗口" />
         </StackPanel>
     </Grid>
 </winUiEx:WindowEx>

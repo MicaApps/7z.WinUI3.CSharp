@@ -32,6 +32,7 @@ public partial class App : Application
     public App()
     {
         this.InitializeComponent();
+        SevenZip.SevenZipBase.SetLibraryPath(Package.Current.InstalledPath + "\\Assets\\7z.dll");
     }
 
     /// <summary>
