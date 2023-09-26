@@ -33,6 +33,7 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.25936-preview" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="SevenZip" Version="19.0.0" />
+    <PackageReference Include="Squid-Box.SevenZipSharp" Version="1.6.1.23" />
     <PackageReference Include="WinUIEx" Version="2.3.0" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
@@ -54,9 +55,6 @@
     <Page Update="Windows\OperationWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="ViewModels\" />
   </ItemGroup>
 
   <!-- 
