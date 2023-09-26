@@ -1,4 +1,6 @@
+using _7zip.Windows;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
 using WinUIEx;
 
 
@@ -10,11 +12,13 @@ public sealed partial class MainWindow
     {
         InitializeComponent();
         this.CenterOnScreen();
+        this.SetIcon("Assets\\AppIcon.ico");
         ExtendsContentIntoTitleBar = true;
         Title = AppWindow.Title;
-        var manager = WindowManager.Get(this);
-        this.SetIcon("Assets\\AppIcon.ico");
-        manager.IsResizable = false;
-        this.SetWindowStyle(WindowStyle.MinimizeBox|WindowStyle.Caption);
+    }
+
+    private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+    {
+        new OperationWindow().Activate();
     }
 }
