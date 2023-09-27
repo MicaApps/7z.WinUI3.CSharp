@@ -27,8 +27,32 @@
                 
             </StackPanel>
             
-            <StackPanel>
+            <StackPanel Spacing="10">
+                <labs:SettingsExpander x:Name="settingsCard2"
+           Header="选项"
+           >
+                    <!--  TODO: This should be TwoWay bound but throws compile error in Uno.  -->
+                    <labs:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xE115;" />
+                    </labs:SettingsExpander.HeaderIcon>
 
+                    <labs:SettingsExpander.Items>
+
+                        <labs:SettingsCard ContentAlignment="Left">
+                            <CheckBox Content="创建自释放程序" />
+                        </labs:SettingsCard>
+
+                        <labs:SettingsCard ContentAlignment="Left">
+                            <CheckBox Content="压缩共享文件" />
+                        </labs:SettingsCard>
+
+                        <labs:SettingsCard ContentAlignment="Left">
+                            <CheckBox Content="操作完成后删除文件" />
+                        </labs:SettingsCard>
+
+
+                    </labs:SettingsExpander.Items>
+                </labs:SettingsExpander>
                 <labs:SettingsExpander x:Name="settingsCard"
                            Header="加密"
                            >
@@ -39,10 +63,26 @@
                     <ToggleSwitch/>
 
                     <labs:SettingsExpander.Items>
-                        
+
+                        <labs:SettingsCard Header="输入密码">
+                            <PasswordBox Width="300" PlaceholderText="Enter your password" PasswordChar="#" />
+                        </labs:SettingsCard>
+
+                        <labs:SettingsCard Header="再次输入密码">
+                            <PasswordBox Width="300" PlaceholderText="Enter your password" PasswordChar="#" />
+                        </labs:SettingsCard>
+
+                        <labs:SettingsCard Header="加密算法">
+                            <ComboBox PlaceholderText="Pick a color" Width="200">
+                                <x:String>Blue</x:String>
+                                <x:String>Green</x:String>
+                                <x:String>Red</x:String>
+                                <x:String>Yellow</x:String>
+                            </ComboBox>
+                        </labs:SettingsCard>
 
                         <labs:SettingsCard ContentAlignment="Left">
-                            <CheckBox Content="Here the ContentAlignment is set to Left. This is great for e.g. CheckBoxes or RadioButtons." />
+                            <CheckBox Content="加密文件名" />
                         </labs:SettingsCard>
 
                         
