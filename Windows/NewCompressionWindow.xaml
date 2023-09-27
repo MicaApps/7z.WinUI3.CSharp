@@ -11,19 +11,23 @@
         <DesktopAcrylicBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid>
+    <Grid >
         <Grid.RowDefinitions>
             <RowDefinition Height="32"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="82"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0">
-            <TextBlock Text="新建压缩文件" Margin="8 4 0 0"/>
-        </Grid>
-        
-        
-            
-            <ScrollViewer Grid.Row="1">
+        <StackPanel Grid.Row="0"  Orientation="Horizontal">
+            <ImageIcon
+       Width="16"
+       Height="16"
+       Margin="8,0,0,0"
+       Source="/Assets/AppIcon.ico" />
+            <TextBlock Text="新建压缩文件" VerticalAlignment="Center" FontSize="12" Margin="8 0 0 0"/>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1">
                 <StackPanel Margin="10">
                 <Grid >
                     <Grid.ColumnDefinitions>
@@ -156,7 +160,7 @@ SnapsTo="StepValues" />
                     <labs:SettingsExpander.HeaderIcon>
                         <FontIcon Glyph="&#xE192;" />
                     </labs:SettingsExpander.HeaderIcon>
-                    <ToggleSwitch/>
+                    
 
                     <labs:SettingsExpander.Items>
 
@@ -187,6 +191,16 @@ SnapsTo="StepValues" />
             </StackPanel>
                 </StackPanel>
             </ScrollViewer>
+
+        <Grid Grid.Row="2" Background="#30000000">
+            <Grid Background="#30000000" Height="1" VerticalAlignment="Top"/>
+            <StackPanel Orientation="Horizontal" Spacing="15" Margin="0 0 25 0" HorizontalAlignment="Right" VerticalAlignment="Center">
+
+                <Button Content="Cancel"/>
+                <Button Style="{StaticResource AccentButtonStyle}" Content="创建压缩文件"/>
+
+            </StackPanel>
+        </Grid>
         
         
     </Grid>
