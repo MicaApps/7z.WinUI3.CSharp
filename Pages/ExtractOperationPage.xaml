@@ -12,6 +12,8 @@
     mc:Ignorable="d">
     <Page.Resources>
         <vm:PathToFileNameConverter x:Key="PathToFileNameConverter" />
+        <vm:BooleanInversionConverter x:Key="BooleanInversionConverter" />
+        <vm:BasicCalculateConverter x:Key="BasicCalculateConverter" />
     </Page.Resources>
     <!--  Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"  -->
 
@@ -35,33 +37,66 @@
             <TextBlock Foreground="{ThemeResource SystemBaseMediumColor}" Text="-" />
             <TextBlock Foreground="{ThemeResource SystemBaseMediumColor}" Text="{Binding ArchivePath, Converter={StaticResource PathToFileNameConverter}}" />
         </StackPanel>
-        <StackPanel Grid.Row="1" Margin="32,10,23,32">
+        <StackPanel
+            Grid.Row="1"
+            Margin="32,10,23,32"
+            Orientation="Vertical">
             <Grid>
-                <StackPanel Orientation="Horizontal" Spacing="5">
+                <StackPanel
+                    Orientation="Horizontal"
+                    Spacing="5"
+                    Visibility="{Binding IsExtractionFinished, Converter={StaticResource BooleanInversionConverter}}">
                     <TextBlock Text="正在解压" />
                     <TextBlock Foreground="{ThemeResource SystemBaseMediumHighColor}" Text="{Binding CurrentExtractingFileName}" />
                 </StackPanel>
-
+                <StackPanel
+                    Orientation="Horizontal"
+                    Spacing="5"
+                    Visibility="{Binding IsExtractionFinished}">
+                    <TextBlock Text="解压成功完成。" />
+                </StackPanel>
 
                 <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                    <StackPanel.Resources>
+                        <Style TargetType="AppBarButton">
+                            <Setter Property="Width" Value="40" />
+                            <Setter Property="Height" Value="48" />
+                            <Setter Property="CornerRadius" Value="4" />
+                        </Style>
+                    </StackPanel.Resources>
+                    <AppBarButton Icon="Pause" IsEnabled="{Binding IsExtractionFinished, Converter={StaticResource BooleanInversionConverter}}" />
                     <AppBarButton
-                        Width="40"
-                        Height="48"
-                        Icon="Pause" />
-                    <AppBarButton
-                        Width="40"
-                        Height="48"
-                        Icon="Cancel" />
+                        Command="{Binding CancelWorkCommand}"
+                        Icon="Cancel"
+                        IsEnabled="{Binding IsExtractionFinished, Converter={StaticResource BooleanInversionConverter}}" />
                 </StackPanel>
             </Grid>
 
-            <Border Height="9" />
+            <Border Height="5" />
             <ProgressBar
                 x:Name="ProgressBar"
                 Maximum="1"
                 ShowError="False"
                 ShowPaused="False"
                 Value="{Binding ExtractPercentage}" />
+
+            <Grid Margin="0,3,0,0" HorizontalAlignment="Stretch">
+                <StackPanel
+                    HorizontalAlignment="Left"
+                    Orientation="Horizontal"
+                    Spacing="1">
+                    <TextBlock Foreground="{ThemeResource SystemBaseMediumColor}" Text="文件" />
+                    <TextBlock Margin="5,0,0,0" Text="{Binding ExtractedFilesCount}" />
+                    <TextBlock Text="/" />
+                    <TextBlock Text="{Binding TotalFilesCount}" />
+
+                </StackPanel>
+                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                    <TextBlock Text="{Binding ExtractPercentage, Converter={StaticResource BasicCalculateConverter}, ConverterParameter=*100}" />
+                    <TextBlock Text="%" />
+                </StackPanel>
+            </Grid>
+
         </StackPanel>
     </Grid>
 </Page>
