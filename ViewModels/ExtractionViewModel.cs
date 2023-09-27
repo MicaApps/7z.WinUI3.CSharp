@@ -15,6 +15,7 @@ namespace _7zip.ViewModels
     {
         #region Private Fields
         SevenZipExtractor extractor;
+        int[] filesIndexToExtract;
         bool isExtractingWholeArchive; //是否正在直接导出整个压缩包
         bool shouldCancelWork = false;
         #endregion
@@ -77,7 +78,7 @@ namespace _7zip.ViewModels
         {
             extractor = new SevenZipExtractor(archivePath)
             //必须使事件调用异步，否则不触发FileExtractionStarted和FileExtractionFinished事件。
-            { EventSynchronization = EventSynchronizationStrategy.AlwaysAsynchronous }; 
+            { EventSynchronization = EventSynchronizationStrategy.AlwaysAsynchronous };
 
             EventStartup();
         }
@@ -93,13 +94,11 @@ namespace _7zip.ViewModels
 
         private void Extractor_ExtractionFinished(object sender, EventArgs e)
         {
-            
+
         }
 
         private void Extractor_FileExtractionStarted(object sender, FileInfoEventArgs e)
         {
-            if (isExtractingWholeArchive) TotalFilesCount = (int)extractor.FilesCount;
-
             e.Cancel = shouldCancelWork;
 
             CurrentExtractingFileName = e.FileInfo.FileName;
@@ -148,15 +147,15 @@ namespace _7zip.ViewModels
             ResetExtractionStatistics();
             if (FileIndexes.Any())
             {
-                isExtractingWholeArchive = false;
-                TotalFilesCount = FileIndexes.Distinct().Count();
-                await extractor.ExtractFilesAsync(OutputDirPath, FileIndexes.Distinct().ToArray());
+                filesIndexToExtract = FileIndexes.ToArray();
             }
             else
             {
-                isExtractingWholeArchive = true;
-                await extractor.ExtractArchiveAsync(OutputDirPath);
+                filesIndexToExtract = extractor.ArchiveFileData.Select(d => d.Index).ToArray();
             }
+            TotalFilesCount = filesIndexToExtract.Length;
+
+            await extractor.ExtractFilesAsync(OutputDirPath, filesIndexToExtract);
         }
     }
 }
