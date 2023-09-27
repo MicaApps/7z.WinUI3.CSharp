@@ -11,10 +11,14 @@ using System.Threading.Tasks;
 
 namespace _7zip.ViewModels
 {
+    //注意：
+    //1.解压时若调用同步Extract方法，只有将EventSynchronizationStrategy设为AlwaysSynchronous才触发FileExtractionStarted和FileExtractionFinished事件；
+    //2.若调用异步Extract方法，只有设为将EventSynchronizationStrategy设为AlwaysAsynchronous才触发FileExtractionStarted和FileExtractionFinished事件。
+    //3.SevenZipExtractor对象的创建线程和解压线程必须为同一个，否则抛出COM转换异常。
+
     internal partial class ExtractionViewModel : ObservableObject
     {
         #region Private Fields
-        SevenZipExtractor extractor;
         int[] filesIndexToExtract;
         bool isExtractingWholeArchive; //是否正在直接导出整个压缩包
         bool shouldCancelWork = false;
@@ -22,9 +26,10 @@ namespace _7zip.ViewModels
 
         #region MVVM Properties
         /// <summary>
-        /// 获取压缩文件的路径。
+        /// 获取或设置要导出的压缩文件的路径。
         /// </summary>
-        public string ArchivePath => extractor.FileName;
+        [ObservableProperty]
+        string archivePath;
 
         /// <summary>
         /// 要导出的文件的索引集合。若为空，则解压所有文件。该集合不应有重复元素。
@@ -76,14 +81,13 @@ namespace _7zip.ViewModels
         #endregion
         public ExtractionViewModel(string archivePath)
         {
-            extractor = new SevenZipExtractor(archivePath)
-            //必须使事件调用异步，否则不触发FileExtractionStarted和FileExtractionFinished事件。
-            { EventSynchronization = EventSynchronizationStrategy.AlwaysAsynchronous };
-
-            EventStartup();
+            ArchivePath = archivePath;
         }
 
-        void EventStartup()
+        public ExtractionViewModel()
+        { }
+
+        void EventStartupFor(SevenZipExtractor extractor)
         {
             extractor.Extracting += Extractor_Extracting;
             extractor.ExtractionFinished += Extractor_ExtractionFinished;
@@ -130,7 +134,7 @@ namespace _7zip.ViewModels
         void ResetExtractionStatistics()
         {
             ExtractPercentage = 0;
-            ExtractedFilesCount = 0;
+            ExtractedFilesCount = 0; 
             TotalFilesCount = -1;
         }
 
@@ -141,10 +145,12 @@ namespace _7zip.ViewModels
             shouldCancelWork = true;
         }
 
-        [RelayCommand]
-        public async Task ExtractAsync()
+
+        void InnerExtract()
         {
+            using var extractor = new SevenZipExtractor(ArchivePath);
             ResetExtractionStatistics();
+            EventStartupFor(extractor);
             if (FileIndexes.Any())
             {
                 filesIndexToExtract = FileIndexes.ToArray();
@@ -154,8 +160,13 @@ namespace _7zip.ViewModels
                 filesIndexToExtract = extractor.ArchiveFileData.Select(d => d.Index).ToArray();
             }
             TotalFilesCount = filesIndexToExtract.Length;
+            extractor.ExtractFiles(OutputDirPath, filesIndexToExtract);
+        }
 
-            await extractor.ExtractFilesAsync(OutputDirPath, filesIndexToExtract);
+        [RelayCommand]
+        public async Task ExtractAsync()
+        {
+            await Task.Run(InnerExtract);
         }
     }
 }

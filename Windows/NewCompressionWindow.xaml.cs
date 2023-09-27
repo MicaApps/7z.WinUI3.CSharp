@@ -19,13 +19,14 @@ using Windows.Foundation.Collections;
 namespace _7zip.Windows
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class NewCompressionWindow : Page
+    public sealed partial class NewCompressionWindow : Window
     {
         public NewCompressionWindow()
         {
             this.InitializeComponent();
+            this.ExtendsContentIntoTitleBar = true;
         }
     }
 }

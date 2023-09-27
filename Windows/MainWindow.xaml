@@ -95,5 +95,11 @@
             <TextBox x:Name="outputPathTxtBox" Width="900" />
             <Button Click="ButtonBase_OnClick" Content="新窗口" />
         </StackPanel>
+        <Button
+            Grid.Row="3"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Click="Button_Click"
+            Content="新NewCompressionWindow" />
     </Grid>
 </winUiEx:WindowEx>

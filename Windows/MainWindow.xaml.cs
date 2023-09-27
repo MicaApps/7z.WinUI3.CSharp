@@ -34,4 +34,10 @@ public sealed partial class MainWindow
         //¿ªÊ¼½âÑ¹
         viewModel.ExtractAsync();
     }
+
+    private void Button_Click(object sender, RoutedEventArgs e)
+    {
+        var window = new NewCompressionWindow();
+        window.Activate();
+    }
 }
