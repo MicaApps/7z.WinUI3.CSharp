@@ -13,6 +13,7 @@ public sealed partial class MainWindow
     public MainWindow()
     {
         InitializeComponent();
+        App.MainDispatcherQueue = this.DispatcherQueue;
         this.CenterOnScreen();
         this.SetIcon("Assets\\AppIcon.ico");
         ExtendsContentIntoTitleBar = true;

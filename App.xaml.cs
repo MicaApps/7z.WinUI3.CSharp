@@ -26,7 +26,8 @@ namespace _7zip;
 /// </summary>
 public partial class App : Application
 {
-    DispatcherQueue MainDispatcherQueue;
+    public static DispatcherQueue MainDispatcherQueue;
+
     /// <summary>
     /// Initializes the singleton application object.  This is the first line of authored code
     /// executed, and as such is the logical equivalent of main() or WinMain().

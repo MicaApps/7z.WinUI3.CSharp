@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.WinUI;
 using SevenZip;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace _7zip.ViewModels
@@ -19,9 +21,11 @@ namespace _7zip.ViewModels
     internal partial class ExtractionViewModel : ObservableObject
     {
         #region Private Fields
+        Type thisType;
         int[] filesIndexToExtract;
         bool isExtractingWholeArchive; //是否正在直接导出整个压缩包
         bool shouldCancelWork = false;
+        SemaphoreSlim pauseWorkSemaphore = new(1, 1);
         #endregion
 
         #region MVVM Properties
@@ -64,8 +68,16 @@ namespace _7zip.ViewModels
         /// <summary>
         /// 获取或设置一个值，指示了解压操作是否完成。
         /// </summary>
+        [NotifyPropertyChangedFor(nameof(IsExtractionFinishedOrCancelled))]
         [ObservableProperty]
         bool isExtractionFinished = false;
+
+        /// <summary>
+        /// 获取或设置一个值，指示了解压操作是否被取消。
+        /// </summary>
+        [NotifyPropertyChangedFor(nameof(IsExtractionFinishedOrCancelled))]
+        [ObservableProperty]
+        bool isExtractionCancelled = false;
 
         /// <summary>
         /// 获取或设置需要导出的文件总个数。
@@ -78,6 +90,21 @@ namespace _7zip.ViewModels
         /// </summary>
         [ObservableProperty]
         int extractedFilesCount = 0;
+
+        /// <summary>
+        /// 获取或设置当前是否已请求暂停解压。
+        /// </summary>
+        [ObservableProperty]
+        bool shouldPause = false;
+
+        /// <summary>
+        /// 获取或设置一个值，指示了当前解压操作是否已暂停。
+        /// </summary>
+        [ObservableProperty]
+        bool paused = false;
+
+
+        public bool IsExtractionFinishedOrCancelled => IsExtractionCancelled || IsExtractionFinished;
         #endregion
         public ExtractionViewModel(string archivePath)
         {
@@ -104,24 +131,35 @@ namespace _7zip.ViewModels
         private void Extractor_FileExtractionStarted(object sender, FileInfoEventArgs e)
         {
             e.Cancel = shouldCancelWork;
+            if (shouldCancelWork)
+                UpdatePropertyFromUIThread(nameof(IsExtractionCancelled), true);
 
-            CurrentExtractingFileName = e.FileInfo.FileName;
-            CurrentExtractingIndex = e.FileInfo.Index;
+            UpdatePropertyFromUIThread(nameof(CurrentExtractingFileName), e.FileInfo.FileName);
+            UpdatePropertyFromUIThread(nameof(CurrentExtractingIndex), e.FileInfo.Index);
         }
 
         private void Extractor_FileExtractionFinished(object sender, FileInfoEventArgs e)
         {
-            ExtractedFilesCount++;
-
-            e.Cancel = shouldCancelWork;
+            UpdatePropertyFromUIThread(nameof(ExtractedFilesCount), ExtractedFilesCount + 1).Wait();
 
             if (ExtractedFilesCount == TotalFilesCount)
-                IsExtractionFinished = true;
+            {
+                UpdatePropertyFromUIThread(nameof(IsExtractionFinished), true);
+                return;
+            }
+
+            if (ShouldPause)
+            {
+                UpdatePropertyFromUIThread(nameof(Paused), true);
+                pauseWorkSemaphore.Wait();
+                pauseWorkSemaphore.Release();
+                UpdatePropertyFromUIThread(nameof(Paused), false);
+            }
         }
 
         private void Extractor_Extracting(object sender, ProgressEventArgs e)
         {
-            ExtractPercentage = e.PercentDone / 100f;
+            UpdatePropertyFromUIThread(nameof(ExtractPercentage), e.PercentDone / 100f);
         }
 
         private void ExtractViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -138,13 +176,56 @@ namespace _7zip.ViewModels
             TotalFilesCount = -1;
         }
 
+        /// <summary>
+        /// 通过反射从UI线程更新该ViewModel的属性。
+        /// </summary>
+        /// <param name="propertyName">属性名称，强烈建议使用nameof</param>
+        /// <param name="newValue">要赋予的值</param>
+        Task UpdatePropertyFromUIThread(string propertyName, object newValue)
+        {
+            thisType ??= this.GetType();
+            var propertyInfo = thisType.GetProperty(propertyName, System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Public);
+            var task = App.MainDispatcherQueue.EnqueueAsync(() => propertyInfo.SetValue(this, newValue));
+            return task;
+        }
 
+        /// <summary>
+        /// 请求取消解压，解压操作将会在下个文件开始解压前完成取消。
+        /// </summary>
         [RelayCommand]
         public void CancelWork()
         {
             shouldCancelWork = true;
+            ResumeWork(); //取消解压时，需要使暂停的解压操作继续，来取消线程(信号量)堵塞，以执行取消操作。
         }
 
+        [RelayCommand]
+        public void PauseWork()
+        {
+            if (!ShouldPause)
+            {
+                pauseWorkSemaphore.Wait();
+                ShouldPause = true;
+            }
+        }
+
+        [RelayCommand]
+        public void ResumeWork()
+        {
+            if (ShouldPause)
+            {
+                pauseWorkSemaphore.Release();
+                ShouldPause = false;
+            }
+        }
+
+        [RelayCommand]
+        public void TogglePause()
+        {
+            if (ShouldPause)
+                ResumeWork();
+            else PauseWork();
+        }
 
         void InnerExtract()
         {
@@ -159,7 +240,9 @@ namespace _7zip.ViewModels
             {
                 filesIndexToExtract = extractor.ArchiveFileData.Select(d => d.Index).ToArray();
             }
-            TotalFilesCount = filesIndexToExtract.Length;
+
+            UpdatePropertyFromUIThread(nameof(TotalFilesCount), filesIndexToExtract.Length);
+
             extractor.ExtractFiles(OutputDirPath, filesIndexToExtract);
         }
 

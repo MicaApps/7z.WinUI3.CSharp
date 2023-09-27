@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml.Data;
+﻿using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -65,6 +66,23 @@ namespace _7zip.ViewModels
         public virtual object ConvertBack(object value, Type targetType, object parameter, string language)
         {
             return Convert(value, targetType, parameter, language);
+        }
+    }
+
+    public class IsPausedSymbolIconConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value is true)
+            {
+                return new SymbolIcon(Symbol.Play);
+            }
+            return new SymbolIcon(Symbol.Pause);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
         }
     }
 }

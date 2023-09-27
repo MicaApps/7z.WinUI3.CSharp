@@ -14,6 +14,7 @@
         <vm:PathToFileNameConverter x:Key="PathToFileNameConverter" />
         <vm:BooleanInversionConverter x:Key="BooleanInversionConverter" />
         <vm:BasicCalculateConverter x:Key="BasicCalculateConverter" />
+        <vm:IsPausedSymbolIconConverter x:Key="IsPausedSymbolIconConverter" />
     </Page.Resources>
     <!--  Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"  -->
 
@@ -35,7 +36,10 @@
                 Source="/Assets/AppIcon.ico" />
             <TextBlock x:Name="titleTxtBlock" Text="解压缩" />
             <TextBlock Foreground="{ThemeResource SystemBaseMediumColor}" Text="-" />
-            <TextBlock Foreground="{ThemeResource SystemBaseMediumColor}" Text="{Binding ArchivePath, Converter={StaticResource PathToFileNameConverter}}" />
+            <TextBlock
+                MaxWidth="240"
+                Foreground="{ThemeResource SystemBaseMediumColor}"
+                Text="{Binding ArchivePath, Converter={StaticResource PathToFileNameConverter}}" />
         </StackPanel>
         <StackPanel
             Grid.Row="1"
@@ -45,7 +49,7 @@
                 <StackPanel
                     Orientation="Horizontal"
                     Spacing="5"
-                    Visibility="{Binding IsExtractionFinished, Converter={StaticResource BooleanInversionConverter}}">
+                    Visibility="{Binding IsExtractionFinishedOrCancelled, Converter={StaticResource BooleanInversionConverter}}">
                     <TextBlock Text="正在解压" />
                     <TextBlock Foreground="{ThemeResource SystemBaseMediumHighColor}" Text="{Binding CurrentExtractingFileName}" />
                 </StackPanel>
@@ -54,6 +58,12 @@
                     Spacing="5"
                     Visibility="{Binding IsExtractionFinished}">
                     <TextBlock Text="解压成功完成。" />
+                </StackPanel>
+                <StackPanel
+                    Orientation="Horizontal"
+                    Spacing="5"
+                    Visibility="{Binding IsExtractionCancelled}">
+                    <TextBlock Text="解压操作已取消。" />
                 </StackPanel>
 
                 <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
@@ -64,11 +74,14 @@
                             <Setter Property="CornerRadius" Value="4" />
                         </Style>
                     </StackPanel.Resources>
-                    <AppBarButton Icon="Pause" IsEnabled="{Binding IsExtractionFinished, Converter={StaticResource BooleanInversionConverter}}" />
+                    <AppBarButton
+                        Command="{Binding TogglePauseCommand}"
+                        Icon="{Binding Paused, Converter={StaticResource IsPausedSymbolIconConverter}}"
+                        IsEnabled="{Binding IsExtractionFinishedOrCancelled, Converter={StaticResource BooleanInversionConverter}}" />
                     <AppBarButton
                         Command="{Binding CancelWorkCommand}"
                         Icon="Cancel"
-                        IsEnabled="{Binding IsExtractionFinished, Converter={StaticResource BooleanInversionConverter}}" />
+                        IsEnabled="{Binding IsExtractionFinishedOrCancelled, Converter={StaticResource BooleanInversionConverter}}" />
                 </StackPanel>
             </Grid>
 
