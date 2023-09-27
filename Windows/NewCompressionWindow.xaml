@@ -5,11 +5,52 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:_7zip.Windows"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     mc:Ignorable="d">
     <Window.SystemBackdrop>
         <DesktopAcrylicBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <TextBlock Text="新建压缩文件" Margin="8 4 0 0"/>
+        </Grid>
+
+        <StackPanel Grid.Row="1" Margin="10">
+
+            <StackPanel >
+                
+            </StackPanel>
+            
+            <StackPanel>
+
+                <labs:SettingsExpander x:Name="settingsCard"
+                           Header="加密"
+                           >
+                    <!--  TODO: This should be TwoWay bound but throws compile error in Uno.  -->
+                    <labs:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xE192;" />
+                    </labs:SettingsExpander.HeaderIcon>
+                    <ToggleSwitch/>
+
+                    <labs:SettingsExpander.Items>
+                        
+
+                        <labs:SettingsCard ContentAlignment="Left">
+                            <CheckBox Content="Here the ContentAlignment is set to Left. This is great for e.g. CheckBoxes or RadioButtons." />
+                        </labs:SettingsCard>
+
+                        
+                    </labs:SettingsExpander.Items>
+                </labs:SettingsExpander>
+            </StackPanel>
+            
+        </StackPanel>
+        
+    </Grid>
 </Window>
