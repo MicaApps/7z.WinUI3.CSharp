@@ -201,8 +201,12 @@
             </StackPanel>
         </ScrollViewer>
 
-        <Grid Grid.Row="2" Background="{ThemeResource SystemAltLowColor}">
-            <Grid Height="1" VerticalAlignment="Top" />
+        <Grid Grid.Row="2" Background="{ThemeResource SystemAltLowColorCustom0}">
+            <Grid Height="1" VerticalAlignment="Top">
+                <Grid.Background>
+                    <SolidColorBrush Opacity="0.2" Color="{ThemeResource SystemBaseLowColor}" />
+                </Grid.Background>
+            </Grid>
             <StackPanel
                 Margin="0,0,25,0"
                 HorizontalAlignment="Right"
