@@ -9,7 +9,7 @@
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <PublishProfile>win10-$(Platform).pubxml</PublishProfile>
     <UseWinUI>true</UseWinUI>
-    <EnableMsixTooling>true</EnableMsixTooling>
+    <EnableMsixTooling>false</EnableMsixTooling>
     <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
@@ -54,6 +54,12 @@
     <Page Update="Windows\OperationWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    
+    <!--编译时排除 7zipPackage 文件夹的内容-->
+    <Content Remove="**/7zipPackage/**" />
+    <Compile Remove="**/7zipPackage/**" />
+    <EmbeddedResource Remove="**/7zipPackage/**" />
+    <None Remove="**/7zipPackage/**" />
   </ItemGroup>
 
   <!-- 
