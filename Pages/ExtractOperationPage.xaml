@@ -15,6 +15,7 @@
         <vm:BooleanInversionConverter x:Key="BooleanInversionConverter" />
         <vm:BasicCalculateConverter x:Key="BasicCalculateConverter" />
         <vm:IsPausedSymbolIconConverter x:Key="IsPausedSymbolIconConverter" />
+        <vm:IsStringContainedByConverter x:Key="IsStringContainedByConverter" />
     </Page.Resources>
     <!--  Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"  -->
 
@@ -49,22 +50,17 @@
                 <StackPanel
                     Orientation="Horizontal"
                     Spacing="5"
-                    Visibility="{Binding IsExtractionFinishedOrCancelled, Converter={StaticResource BooleanInversionConverter}}">
+                    Visibility="{Binding IsExtracting}">
                     <TextBlock Text="正在解压" />
                     <TextBlock Foreground="{ThemeResource SystemBaseMediumHighColor}" Text="{Binding CurrentExtractingFileName}" />
                 </StackPanel>
-                <StackPanel
-                    Orientation="Horizontal"
-                    Spacing="5"
-                    Visibility="{Binding IsExtractionFinished}">
-                    <TextBlock Text="解压成功完成。" />
-                </StackPanel>
-                <StackPanel
-                    Orientation="Horizontal"
-                    Spacing="5"
-                    Visibility="{Binding IsExtractionCancelled}">
-                    <TextBlock Text="解压操作已取消。" />
-                </StackPanel>
+                <Grid>
+                    <TextBlock Text="解压成功完成。" Visibility="{Binding IsFinished}" />
+                    <TextBlock Text="解压操作已取消。" Visibility="{Binding IsCancelled}" />
+                    <TextBlock Text="正在取消......" Visibility="{Binding IsCancelling}" />
+                    <TextBlock Text="解压已暂停。" Visibility="{Binding IsPaused}" />
+                    <TextBlock Text="正在暂停......" Visibility="{Binding IsPausing}" />
+                </Grid>
 
                 <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                     <StackPanel.Resources>
@@ -76,12 +72,12 @@
                     </StackPanel.Resources>
                     <AppBarButton
                         Command="{Binding TogglePauseCommand}"
-                        Icon="{Binding Paused, Converter={StaticResource IsPausedSymbolIconConverter}}"
-                        IsEnabled="{Binding IsExtractionFinishedOrCancelled, Converter={StaticResource BooleanInversionConverter}}" />
+                        Icon="{Binding IsPaused, Converter={StaticResource IsPausedSymbolIconConverter}}"
+                        IsEnabled="{Binding ExtractionStatus, Converter={StaticResource IsStringContainedByConverter}, ConverterParameter=None|Extracting|Paused}" />
                     <AppBarButton
                         Command="{Binding CancelWorkCommand}"
                         Icon="Cancel"
-                        IsEnabled="{Binding IsExtractionFinishedOrCancelled, Converter={StaticResource BooleanInversionConverter}}" />
+                        IsEnabled="{Binding ExtractionStatus, Converter={StaticResource IsStringContainedByConverter}, ConverterParameter=None|Extracting|Paused|Pausing}" />
                 </StackPanel>
             </Grid>
 

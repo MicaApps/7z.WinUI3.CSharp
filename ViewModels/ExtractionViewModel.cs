@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -23,7 +24,8 @@ namespace _7zip.ViewModels
         #region Private Fields
         Type thisType;
         int[] filesIndexToExtract;
-        bool isExtractingWholeArchive; //是否正在直接导出整个压缩包
+        List<ArchiveFileInfo> extractedFiles = new(10);
+        bool shouldPause = false;
         bool shouldCancelWork = false;
         SemaphoreSlim pauseWorkSemaphore = new(1, 1);
         #endregion
@@ -66,20 +68,6 @@ namespace _7zip.ViewModels
         int currentExtractingIndex;
 
         /// <summary>
-        /// 获取或设置一个值，指示了解压操作是否完成。
-        /// </summary>
-        [NotifyPropertyChangedFor(nameof(IsExtractionFinishedOrCancelled))]
-        [ObservableProperty]
-        bool isExtractionFinished = false;
-
-        /// <summary>
-        /// 获取或设置一个值，指示了解压操作是否被取消。
-        /// </summary>
-        [NotifyPropertyChangedFor(nameof(IsExtractionFinishedOrCancelled))]
-        [ObservableProperty]
-        bool isExtractionCancelled = false;
-
-        /// <summary>
         /// 获取或设置需要导出的文件总个数。
         /// </summary>
         [ObservableProperty]
@@ -91,20 +79,42 @@ namespace _7zip.ViewModels
         [ObservableProperty]
         int extractedFilesCount = 0;
 
-        /// <summary>
-        /// 获取或设置当前是否已请求暂停解压。
-        /// </summary>
+
         [ObservableProperty]
-        bool shouldPause = false;
+        [NotifyPropertyChangedFor(nameof(IsPausing))]
+        [NotifyPropertyChangedFor(nameof(IsPaused))]
+        [NotifyPropertyChangedFor(nameof(IsFinished))]
+        [NotifyPropertyChangedFor(nameof(IsCancelling))]
+        [NotifyPropertyChangedFor(nameof(IsCancelled))]
+        [NotifyPropertyChangedFor(nameof(IsExtracting))]
+        ExtractionStatus extractionStatus;
+
+        /// <summary>
+        /// 获取或设置一个值，指示了当前解压操作是否正在暂停。
+        /// </summary>
+        public bool IsPausing => ExtractionStatus == ExtractionStatus.Pausing;
 
         /// <summary>
         /// 获取或设置一个值，指示了当前解压操作是否已暂停。
         /// </summary>
-        [ObservableProperty]
-        bool paused = false;
+        public bool IsPaused => ExtractionStatus == ExtractionStatus.Paused;
 
+        /// <summary>
+        /// 获取或设置一个值，指示了正在取消（但还未完成取消）解压操作。
+        /// </summary>
+        public bool IsCancelling => ExtractionStatus == ExtractionStatus.Cancelling;
 
-        public bool IsExtractionFinishedOrCancelled => IsExtractionCancelled || IsExtractionFinished;
+        /// <summary>
+        /// 获取或设置一个值，指示了解压操作是否被取消。
+        /// </summary>
+        public bool IsCancelled => ExtractionStatus == ExtractionStatus.Cancelled;
+
+        /// <summary>
+        /// 获取或设置一个值，指示了解压操作是否完成。
+        /// </summary>
+        public bool IsFinished => ExtractionStatus == ExtractionStatus.Finished;
+
+        public bool IsExtracting => ExtractionStatus == ExtractionStatus.Extracting;
         #endregion
         public ExtractionViewModel(string archivePath)
         {
@@ -125,41 +135,69 @@ namespace _7zip.ViewModels
 
         private void Extractor_ExtractionFinished(object sender, EventArgs e)
         {
+            //如果因取消而结束，应当删除已经导出的文件。
+            if (ExtractionStatus == ExtractionStatus.Cancelled)
+                foreach (var file in extractedFiles)
+                {
+                    string path = $"{OutputDirPath}\\{file.FileName}";
+                    try
+                    {
+                        if (file.IsDirectory)
+                        {
 
+                            if (Directory.Exists(path))
+                            {
+                                Directory.Delete(path, true);
+                            }
+                        }
+                        else
+                        {
+                            File.Delete(path);
+                        }
+                        
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"[At {nameof(Extractor_ExtractionFinished)}]:{ex.Message}");
+                        //待定异常处理
+                    }
+                }
         }
 
         private void Extractor_FileExtractionStarted(object sender, FileInfoEventArgs e)
         {
             e.Cancel = shouldCancelWork;
             if (shouldCancelWork)
-                UpdatePropertyFromUIThread(nameof(IsExtractionCancelled), true);
+            {
+                SetPropertyFromUIThreadAsync(nameof(ExtractionStatus), ExtractionStatus.Cancelled);
+            }
 
-            UpdatePropertyFromUIThread(nameof(CurrentExtractingFileName), e.FileInfo.FileName);
-            UpdatePropertyFromUIThread(nameof(CurrentExtractingIndex), e.FileInfo.Index);
+            SetPropertyFromUIThreadAsync(nameof(CurrentExtractingFileName), e.FileInfo.FileName);
+            SetPropertyFromUIThreadAsync(nameof(CurrentExtractingIndex), e.FileInfo.Index);
         }
 
         private void Extractor_FileExtractionFinished(object sender, FileInfoEventArgs e)
         {
-            UpdatePropertyFromUIThread(nameof(ExtractedFilesCount), ExtractedFilesCount + 1).Wait();
+            extractedFiles.Add(e.FileInfo);
+            SetPropertyFromUIThreadAsync(nameof(ExtractedFilesCount), ExtractedFilesCount + 1).Wait();
 
             if (ExtractedFilesCount == TotalFilesCount)
             {
-                UpdatePropertyFromUIThread(nameof(IsExtractionFinished), true);
+                SetPropertyFromUIThreadAsync(nameof(ExtractionStatus), ExtractionStatus.Finished);
                 return;
             }
 
-            if (ShouldPause)
+            if (shouldPause)
             {
-                UpdatePropertyFromUIThread(nameof(Paused), true);
+                SetPropertyFromUIThreadAsync(nameof(ExtractionStatus), ExtractionStatus.Paused);
                 pauseWorkSemaphore.Wait();
                 pauseWorkSemaphore.Release();
-                UpdatePropertyFromUIThread(nameof(Paused), false);
             }
         }
 
         private void Extractor_Extracting(object sender, ProgressEventArgs e)
         {
-            UpdatePropertyFromUIThread(nameof(ExtractPercentage), e.PercentDone / 100f);
+            SetPropertyFromUIThreadAsync(nameof(ExtractPercentage), e.PercentDone / 100f);
         }
 
         private void ExtractViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -171,6 +209,7 @@ namespace _7zip.ViewModels
         /// </summary>
         void ResetExtractionStatistics()
         {
+            extractedFiles.Clear();
             ExtractPercentage = 0;
             ExtractedFilesCount = 0; 
             TotalFilesCount = -1;
@@ -181,13 +220,15 @@ namespace _7zip.ViewModels
         /// </summary>
         /// <param name="propertyName">属性名称，强烈建议使用nameof</param>
         /// <param name="newValue">要赋予的值</param>
-        Task UpdatePropertyFromUIThread(string propertyName, object newValue)
+        /// <param name="generateWaitTask">是否要生成该操作的Task，以便进行等待。</param>
+        Task SetPropertyFromUIThreadAsync(string propertyName, object newValue)
         {
             thisType ??= this.GetType();
             var propertyInfo = thisType.GetProperty(propertyName, System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Public);
             var task = App.MainDispatcherQueue.EnqueueAsync(() => propertyInfo.SetValue(this, newValue));
             return task;
         }
+
 
         /// <summary>
         /// 请求取消解压，解压操作将会在下个文件开始解压前完成取消。
@@ -196,33 +237,37 @@ namespace _7zip.ViewModels
         public void CancelWork()
         {
             shouldCancelWork = true;
+            ExtractionStatus = ExtractionStatus.Cancelling;
             ResumeWork(); //取消解压时，需要使暂停的解压操作继续，来取消线程(信号量)堵塞，以执行取消操作。
         }
 
         [RelayCommand]
         public void PauseWork()
         {
-            if (!ShouldPause)
+            if (!shouldPause)
             {
+                ExtractionStatus = ExtractionStatus.Pausing;
                 pauseWorkSemaphore.Wait();
-                ShouldPause = true;
+                shouldPause = true;
             }
         }
 
         [RelayCommand]
         public void ResumeWork()
         {
-            if (ShouldPause)
+            if (shouldPause)
             {
                 pauseWorkSemaphore.Release();
-                ShouldPause = false;
+                shouldPause = false;
+                if (!shouldCancelWork)
+                    ExtractionStatus = ExtractionStatus.Extracting;
             }
         }
 
         [RelayCommand]
         public void TogglePause()
         {
-            if (ShouldPause)
+            if (shouldPause)
                 ResumeWork();
             else PauseWork();
         }
@@ -241,8 +286,9 @@ namespace _7zip.ViewModels
                 filesIndexToExtract = extractor.ArchiveFileData.Select(d => d.Index).ToArray();
             }
 
-            UpdatePropertyFromUIThread(nameof(TotalFilesCount), filesIndexToExtract.Length);
+            SetPropertyFromUIThreadAsync(nameof(TotalFilesCount), filesIndexToExtract.Length);
 
+            SetPropertyFromUIThreadAsync(nameof(ExtractionStatus), ExtractionStatus.Extracting);
             extractor.ExtractFiles(OutputDirPath, filesIndexToExtract);
         }
 
@@ -251,5 +297,16 @@ namespace _7zip.ViewModels
         {
             await Task.Run(InnerExtract);
         }
+    }
+
+    public enum ExtractionStatus
+    {
+        None = 0,
+        Extracting,
+        Finished,
+        Pausing,
+        Paused,
+        Cancelling,
+        Cancelled
     }
 }
