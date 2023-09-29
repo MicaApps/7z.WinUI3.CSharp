@@ -34,12 +34,13 @@
   </PropertyGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />
   <PropertyGroup>
+    <AssetTargetFallback>$(AssetTargetFallback);net6.0-windows10.0.19041.0;native</AssetTargetFallback>
     <ProjectGuid>512f0c66-6766-4bf5-a026-fd79f00eaa7a</ProjectGuid>
     <TargetPlatformVersion>10.0.22621.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <DefaultLanguage>zh-CN</DefaultLanguage>
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
-    <NoWarn>$(NoWarn);NU1702</NoWarn>
+    <NoWarn>$(NoWarn);NU1701;NU1702</NoWarn>
     <EntryPointProjectUniqueName>..\7zip.csproj</EntryPointProjectUniqueName>
   </PropertyGroup>
   <ItemGroup>
@@ -50,5 +51,6 @@
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
   <ItemGroup>
     <ProjectReference Include="..\7zip.csproj" />
+    <ProjectReference Include="..\ZipShellExt\ZipShellExt.vcxproj" />
   </ItemGroup>
 </Project>

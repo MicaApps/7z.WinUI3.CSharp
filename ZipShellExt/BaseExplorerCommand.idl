@@ -1,0 +1,48 @@
+namespace ZipShellExt
+{
+	enum ExplorerCommandState
+	{
+		Enabled = 0,
+		Disabled = 0x1,
+		Hidden = 0x2,
+		Checkbox = 0x4,
+		Checked = 0x8,
+		RadioChecked = 0x10
+	};
+
+	unsealed runtimeclass BaseExplorerCommand
+	{
+		BaseExplorerCommand();
+		Windows.Foundation.Collections.IVectorView<BaseExplorerCommand> SubCommands{ get; };
+	}
+
+	[default_interface]
+	runtimeclass SevenZipCommand : BaseExplorerCommand
+	{
+		SevenZipCommand();
+	}
+
+	[default_interface]
+	runtimeclass ExtractToCommand : BaseExplorerCommand
+	{
+		ExtractToCommand();
+	}
+
+	[default_interface]
+	runtimeclass AddTo7zCommand : BaseExplorerCommand
+	{
+		AddTo7zCommand();
+	}
+
+	[default_interface]
+	runtimeclass AddToZipCommand : BaseExplorerCommand
+	{
+		AddToZipCommand();
+	}
+
+	[default_interface]
+	runtimeclass CompressAndEmailCommand : BaseExplorerCommand
+	{
+		CompressAndEmailCommand();
+	}
+}
