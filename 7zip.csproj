@@ -13,6 +13,10 @@
     <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Assets\unzip dark.ico" />
+    <None Remove="Assets\unzip Light.ico" />
+    <None Remove="Assets\zip Dark.ico" />
+    <None Remove="Assets\zip Light.ico" />
     <None Remove="Pages\MainPage.xaml" />
     <None Remove="Windows\OperationWindow.xaml" />
   </ItemGroup>
@@ -60,6 +64,12 @@
     <Compile Remove="**/7zipPackage/**" />
     <EmbeddedResource Remove="**/7zipPackage/**" />
     <None Remove="**/7zipPackage/**" />
+
+    <!--编译时排除 ZipShellExt 文件夹的内容-->
+    <Content Remove="**/ZipShellExt/**" />
+    <Compile Remove="**/ZipShellExt/**" />
+    <EmbeddedResource Remove="**/ZipShellExt/**" />
+    <None Remove="**/ZipShellExt/**" />
   </ItemGroup>
 
   <!-- 

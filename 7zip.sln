@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "7zip", "7zip.csproj", "{02B
 EndProject
 Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "7zipPackage", "7zipPackage\7zipPackage.wapproj", "{512F0C66-6766-4BF5-A026-FD79F00EAA7A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZipShellExt", "ZipShellExt\ZipShellExt.vcxproj", "{FADF2431-15E1-41F2-8A8F-FEB77B79C922}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -53,6 +55,18 @@ Global
 		{512F0C66-6766-4BF5-A026-FD79F00EAA7A}.Release|x86.ActiveCfg = Release|x86
 		{512F0C66-6766-4BF5-A026-FD79F00EAA7A}.Release|x86.Build.0 = Release|x86
 		{512F0C66-6766-4BF5-A026-FD79F00EAA7A}.Release|x86.Deploy.0 = Release|x86
+		{FADF2431-15E1-41F2-8A8F-FEB77B79C922}.Debug|ARM64.ActiveCfg = Debug|x64
+		{FADF2431-15E1-41F2-8A8F-FEB77B79C922}.Debug|ARM64.Build.0 = Debug|x64
+		{FADF2431-15E1-41F2-8A8F-FEB77B79C922}.Debug|x64.ActiveCfg = Debug|x64
+		{FADF2431-15E1-41F2-8A8F-FEB77B79C922}.Debug|x64.Build.0 = Debug|x64
+		{FADF2431-15E1-41F2-8A8F-FEB77B79C922}.Debug|x86.ActiveCfg = Debug|Win32
+		{FADF2431-15E1-41F2-8A8F-FEB77B79C922}.Debug|x86.Build.0 = Debug|Win32
+		{FADF2431-15E1-41F2-8A8F-FEB77B79C922}.Release|ARM64.ActiveCfg = Release|x64
+		{FADF2431-15E1-41F2-8A8F-FEB77B79C922}.Release|ARM64.Build.0 = Release|x64
+		{FADF2431-15E1-41F2-8A8F-FEB77B79C922}.Release|x64.ActiveCfg = Release|x64
+		{FADF2431-15E1-41F2-8A8F-FEB77B79C922}.Release|x64.Build.0 = Release|x64
+		{FADF2431-15E1-41F2-8A8F-FEB77B79C922}.Release|x86.ActiveCfg = Release|Win32
+		{FADF2431-15E1-41F2-8A8F-FEB77B79C922}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
