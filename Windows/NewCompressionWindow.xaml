@@ -204,7 +204,7 @@
         <Grid Grid.Row="2" Background="{ThemeResource SystemAltLowColorCustom0}">
             <Grid Height="1" VerticalAlignment="Top">
                 <Grid.Background>
-                    <SolidColorBrush Opacity="0.2" Color="{ThemeResource SystemBaseLowColor}" />
+                    <SolidColorBrush Opacity="0.2" Color="#20000000" />
                 </Grid.Background>
             </Grid>
             <StackPanel
