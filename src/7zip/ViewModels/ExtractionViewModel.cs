@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI;
+using Microsoft.VisualBasic.FileIO;
 using SevenZip;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Storage;
 
 namespace _7zip.ViewModels
 {
@@ -23,11 +25,12 @@ namespace _7zip.ViewModels
     {
         #region Private Fields
         Type thisType;
-        int[] filesIndexToExtract;
-        List<ArchiveFileInfo> extractedFiles = new(10);
         bool shouldPause = false;
         bool shouldCancelWork = false;
+        int[] filesIndexToExtract;
+        string tempOutputDir;
         SemaphoreSlim pauseWorkSemaphore = new(1, 1);
+        List<ArchiveFileInfo> extractedFiles = new(10);
         #endregion
 
         #region MVVM Properties
@@ -42,6 +45,12 @@ namespace _7zip.ViewModels
         /// </summary>
         [ObservableProperty]
         ObservableCollection<int> fileIndexes = new();
+
+        /// <summary>
+        /// 获取或设置解压使用的中转缓存目录位置。
+        /// </summary>
+        [ObservableProperty]
+        ExtractionTempOutputPosition tempOutputPosition;
 
         /// <summary>
         /// 获取或设置解压的目标输出路径。
@@ -137,31 +146,17 @@ namespace _7zip.ViewModels
         {
             //如果因取消而结束，应当删除已经导出的文件。
             if (ExtractionStatus == ExtractionStatus.Cancelled)
-                foreach (var file in extractedFiles)
-                {
-                    string path = $"{OutputDirPath}\\{file.FileName}";
-                    try
-                    {
-                        if (file.IsDirectory)
-                        {
+            {
+                DeleteExtractedFiles(); //如果在直接输出模式下，则删除最终文件。
+                return;
+            }
 
-                            if (Directory.Exists(path))
-                            {
-                                Directory.Delete(path, true);
-                            }
-                        }
-                        else
-                        {
-                            File.Delete(path);
-                        }
-                        
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"[At {nameof(Extractor_ExtractionFinished)}]:{ex.Message}");
-                        //待定异常处理
-                    }
-                }
+            if (TempOutputPosition != ExtractionTempOutputPosition.Direct)
+            {
+                FileSystem.CopyDirectory(tempOutputDir, OutputDirPath, UIOption.AllDialogs, UICancelOption.DoNothing);
+            }
+
+            DeleteTempDirectory();
         }
 
         private void Extractor_FileExtractionStarted(object sender, FileInfoEventArgs e)
@@ -179,7 +174,7 @@ namespace _7zip.ViewModels
         private void Extractor_FileExtractionFinished(object sender, FileInfoEventArgs e)
         {
             extractedFiles.Add(e.FileInfo);
-            SetPropertyFromUIThreadAsync(nameof(ExtractedFilesCount), ExtractedFilesCount + 1).Wait();
+            SetPropertyFromUIThreadAsync(nameof(ExtractedFilesCount), ExtractedFilesCount + 1).Wait(); //ExtractedFilesCount的新值依赖于旧值，应确保值更新完成再继续。
 
             if (ExtractedFilesCount == TotalFilesCount)
             {
@@ -205,13 +200,23 @@ namespace _7zip.ViewModels
         }
 
         /// <summary>
-        /// 重置解压操作的所有统计数据，以便执行新的解压操作。
+        /// 重置解压操作的所有统计数据和信息，以便执行新的解压操作。
         /// </summary>
-        void ResetExtractionStatistics()
+        void ResetExtractionStatus()
         {
             extractedFiles.Clear();
+
+            //设置缓存文件目录
+            tempOutputDir = TempOutputPosition switch
+            {
+                ExtractionTempOutputPosition.Direct => OutputDirPath,
+                ExtractionTempOutputPosition.AppLocalCache => ApplicationData.Current.LocalCacheFolder.Path,
+                _ => Path.Combine(Path.GetTempPath(), "MicaApp.7zip", Path.GetRandomFileName()) //如果未指定，也使用用户缓存目录。
+            };
+            Debug.WriteLine($"[{nameof(ResetExtractionStatus)}] using \"{tempOutputDir}\" as temp directory.");
+
             ExtractPercentage = 0;
-            ExtractedFilesCount = 0; 
+            ExtractedFilesCount = 0;
             TotalFilesCount = -1;
         }
 
@@ -272,10 +277,57 @@ namespace _7zip.ViewModels
             else PauseWork();
         }
 
+        /// <summary>
+        /// 删除缓存文件目录（如果有的话）。
+        /// </summary>
+        void DeleteTempDirectory()
+        {
+            //确保没有使用直接输出模式，以防止删除解压后的最终文件。
+            if(TempOutputPosition != ExtractionTempOutputPosition.Direct)
+            {
+                Directory.Delete(tempOutputDir, true);
+                Debug.WriteLine($"[{nameof(DeleteTempDirectory)}] removed \"{tempOutputDir}\" and its sub-files.");
+            }
+        }
+
+        /// <summary>
+        /// 删除解压最终输出的文件（仅直接输出模式）。
+        /// </summary>
+        void DeleteExtractedFiles()
+        {
+            if (TempOutputPosition != ExtractionTempOutputPosition.Direct) return;
+
+            foreach (var file in extractedFiles)
+            {
+                string path = $"{OutputDirPath}\\{file.FileName}";
+                try
+                {
+                    if (file.IsDirectory)
+                    {
+
+                        if (Directory.Exists(path))
+                        {
+                            Directory.Delete(path, true);
+                        }
+                    }
+                    else
+                    {
+                        File.Delete(path);
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[At {nameof(Extractor_ExtractionFinished)}]:{ex.Message}");
+                    //待定异常处理
+                }
+            }
+        }
+
         void InnerExtract()
         {
             using var extractor = new SevenZipExtractor(ArchivePath);
-            ResetExtractionStatistics();
+            ResetExtractionStatus();
             EventStartupFor(extractor);
             if (FileIndexes.Any())
             {
@@ -287,9 +339,9 @@ namespace _7zip.ViewModels
             }
 
             SetPropertyFromUIThreadAsync(nameof(TotalFilesCount), filesIndexToExtract.Length);
-
             SetPropertyFromUIThreadAsync(nameof(ExtractionStatus), ExtractionStatus.Extracting);
-            extractor.ExtractFiles(OutputDirPath, filesIndexToExtract);
+
+            extractor.ExtractFiles(tempOutputDir, filesIndexToExtract); //开始解压文件（先到缓存中转目录）。
         }
 
         [RelayCommand]
@@ -299,6 +351,9 @@ namespace _7zip.ViewModels
         }
     }
 
+    /// <summary>
+    /// 表示当前导出过程的状态。
+    /// </summary>
     public enum ExtractionStatus
     {
         None = 0,
@@ -308,5 +363,25 @@ namespace _7zip.ViewModels
         Paused,
         Cancelling,
         Cancelled
+    }
+
+    /// <summary>
+    /// 表示导出时使用的临时文件中转目录。
+    /// </summary>
+    public enum ExtractionTempOutputPosition
+    {
+        Default = 0,
+        /// <summary>
+        /// 不使用中转目录。
+        /// </summary>
+        Direct,
+        /// <summary>
+        /// 使用用户缓存目录。
+        /// </summary>
+        TempFolder,
+        /// <summary>
+        /// 使用应用本地缓存目录。
+        /// </summary>
+        AppLocalCache
     }
 }
