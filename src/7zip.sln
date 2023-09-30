@@ -5,13 +5,13 @@ VisualStudioVersion = 17.8.34112.27
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{DA082B34-ABE7-400D-AE6C-1F3C27A63C83}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "7zip", "7zip\7zip.csproj", "{09908D9F-6FB7-459A-B4A6-AF1853132979}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A1F7BD86-3822-4F3C-BB06-2783E9983833}"
 	ProjectSection(SolutionItems) = preProject
 		..\LICENSE.txt = ..\LICENSE.txt
 		..\README.md = ..\README.md
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "7Zip.App", "7zip\7Zip.App.csproj", "{B3761D1B-D58A-4A93-903E-730DF1489850}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,30 +23,30 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{09908D9F-6FB7-459A-B4A6-AF1853132979}.Debug|ARM64.ActiveCfg = Debug|ARM64
-		{09908D9F-6FB7-459A-B4A6-AF1853132979}.Debug|ARM64.Build.0 = Debug|ARM64
-		{09908D9F-6FB7-459A-B4A6-AF1853132979}.Debug|ARM64.Deploy.0 = Debug|ARM64
-		{09908D9F-6FB7-459A-B4A6-AF1853132979}.Debug|x64.ActiveCfg = Debug|x64
-		{09908D9F-6FB7-459A-B4A6-AF1853132979}.Debug|x64.Build.0 = Debug|x64
-		{09908D9F-6FB7-459A-B4A6-AF1853132979}.Debug|x64.Deploy.0 = Debug|x64
-		{09908D9F-6FB7-459A-B4A6-AF1853132979}.Debug|x86.ActiveCfg = Debug|x86
-		{09908D9F-6FB7-459A-B4A6-AF1853132979}.Debug|x86.Build.0 = Debug|x86
-		{09908D9F-6FB7-459A-B4A6-AF1853132979}.Debug|x86.Deploy.0 = Debug|x86
-		{09908D9F-6FB7-459A-B4A6-AF1853132979}.Release|ARM64.ActiveCfg = Release|ARM64
-		{09908D9F-6FB7-459A-B4A6-AF1853132979}.Release|ARM64.Build.0 = Release|ARM64
-		{09908D9F-6FB7-459A-B4A6-AF1853132979}.Release|ARM64.Deploy.0 = Release|ARM64
-		{09908D9F-6FB7-459A-B4A6-AF1853132979}.Release|x64.ActiveCfg = Release|x64
-		{09908D9F-6FB7-459A-B4A6-AF1853132979}.Release|x64.Build.0 = Release|x64
-		{09908D9F-6FB7-459A-B4A6-AF1853132979}.Release|x64.Deploy.0 = Release|x64
-		{09908D9F-6FB7-459A-B4A6-AF1853132979}.Release|x86.ActiveCfg = Release|x86
-		{09908D9F-6FB7-459A-B4A6-AF1853132979}.Release|x86.Build.0 = Release|x86
-		{09908D9F-6FB7-459A-B4A6-AF1853132979}.Release|x86.Deploy.0 = Release|x86
+		{B3761D1B-D58A-4A93-903E-730DF1489850}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{B3761D1B-D58A-4A93-903E-730DF1489850}.Debug|ARM64.Build.0 = Debug|ARM64
+		{B3761D1B-D58A-4A93-903E-730DF1489850}.Debug|ARM64.Deploy.0 = Debug|ARM64
+		{B3761D1B-D58A-4A93-903E-730DF1489850}.Debug|x64.ActiveCfg = Debug|x64
+		{B3761D1B-D58A-4A93-903E-730DF1489850}.Debug|x64.Build.0 = Debug|x64
+		{B3761D1B-D58A-4A93-903E-730DF1489850}.Debug|x64.Deploy.0 = Debug|x64
+		{B3761D1B-D58A-4A93-903E-730DF1489850}.Debug|x86.ActiveCfg = Debug|x86
+		{B3761D1B-D58A-4A93-903E-730DF1489850}.Debug|x86.Build.0 = Debug|x86
+		{B3761D1B-D58A-4A93-903E-730DF1489850}.Debug|x86.Deploy.0 = Debug|x86
+		{B3761D1B-D58A-4A93-903E-730DF1489850}.Release|ARM64.ActiveCfg = Release|ARM64
+		{B3761D1B-D58A-4A93-903E-730DF1489850}.Release|ARM64.Build.0 = Release|ARM64
+		{B3761D1B-D58A-4A93-903E-730DF1489850}.Release|ARM64.Deploy.0 = Release|ARM64
+		{B3761D1B-D58A-4A93-903E-730DF1489850}.Release|x64.ActiveCfg = Release|x64
+		{B3761D1B-D58A-4A93-903E-730DF1489850}.Release|x64.Build.0 = Release|x64
+		{B3761D1B-D58A-4A93-903E-730DF1489850}.Release|x64.Deploy.0 = Release|x64
+		{B3761D1B-D58A-4A93-903E-730DF1489850}.Release|x86.ActiveCfg = Release|x86
+		{B3761D1B-D58A-4A93-903E-730DF1489850}.Release|x86.Build.0 = Release|x86
+		{B3761D1B-D58A-4A93-903E-730DF1489850}.Release|x86.Deploy.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{09908D9F-6FB7-459A-B4A6-AF1853132979} = {DA082B34-ABE7-400D-AE6C-1F3C27A63C83}
+		{B3761D1B-D58A-4A93-903E-730DF1489850} = {DA082B34-ABE7-400D-AE6C-1F3C27A63C83}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D198217-DFC0-4C15-848F-F579459E1176}
