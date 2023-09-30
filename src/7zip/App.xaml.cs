@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -17,8 +20,6 @@ using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace _7zip;
 /// <summary>
@@ -27,6 +28,19 @@ namespace _7zip;
 public partial class App : Application
 {
     public static DispatcherQueue MainDispatcherQueue;
+
+    public IHost Host;
+
+    public static T GetService<T>()
+        where T : class
+    {
+        if ((App.Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
+        {
+            throw new ArgumentException($"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.");
+        }
+
+        return service;
+    }
 
     /// <summary>
     /// Initializes the singleton application object.  This is the first line of authored code
@@ -45,9 +59,24 @@ public partial class App : Application
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
         m_window = MainWindow.Current;
+
         Frame rootFrame = MainWindow.Current.EnsureWindowIsInitialized();
         rootFrame.Navigate(typeof(Pages.MainPage), args);
+
+        ConfigureServives();
+
         m_window.Activate();
+    }
+
+    private void ConfigureServives()
+    {
+        Host = Microsoft.Extensions.Hosting.Host.
+            CreateDefaultBuilder().
+            UseContentRoot(AppContext.BaseDirectory).
+            ConfigureServices((context, services) =>
+            {
+           
+            }).Build();
     }
 
     private Window m_window;
