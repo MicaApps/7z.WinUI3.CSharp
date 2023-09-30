@@ -50,12 +50,13 @@
   </PropertyGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />
   <PropertyGroup>
+	<AssetTargetFallback>$(AssetTargetFallback);net6.0-windows10.0.19041.0;native</AssetTargetFallback>
     <ProjectGuid>19092f66-151e-4e45-97b4-9f97158b8e88</ProjectGuid>
     <TargetPlatformVersion>10.0.22621.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <DefaultLanguage>zh-CN</DefaultLanguage>
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
-    <NoWarn>$(NoWarn);NU1702</NoWarn>
+    <NoWarn>$(NoWarn);NU1702;NU1701</NoWarn>
     <EntryPointProjectUniqueName>..\7zip\7Zip.App.csproj</EntryPointProjectUniqueName>
   </PropertyGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
@@ -111,14 +112,19 @@
     <Content Include="Assets\StoreLogo.scale-150.png" />
     <Content Include="Assets\StoreLogo.scale-200.png" />
     <Content Include="Assets\StoreLogo.scale-400.png" />
+    <Content Include="Assets\unzip dark.ico" />
+    <Content Include="Assets\unzip Light.ico" />
     <Content Include="Assets\Wide310x150Logo.scale-100.png" />
     <Content Include="Assets\Wide310x150Logo.scale-125.png" />
     <Content Include="Assets\Wide310x150Logo.scale-150.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
     <Content Include="Assets\Wide310x150Logo.scale-400.png" />
+    <Content Include="Assets\zip Dark.ico" />
+    <Content Include="Assets\zip Light.ico" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\7zip\7Zip.App.csproj" />
+	  <ProjectReference Include="..\ZipShellExt\ZipShellExt.vcxproj" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">

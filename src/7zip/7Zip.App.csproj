@@ -69,6 +69,12 @@
     <None Remove="Views\Pages\SplashScreenPage.xaml" />
     <None Remove="Views\Windows\NewCompressionWindow.xaml" />
     <None Remove="Views\Windows\OperationWindow.xaml" />
+	  
+	<!--编译时排除 ZipShellExt 文件夹的内容-->
+	<Content Remove="**/ZipShellExt/**" />
+	<Compile Remove="**/ZipShellExt/**" />
+	<EmbeddedResource Remove="**/ZipShellExt/**" />
+	<None Remove="**/ZipShellExt/**" />
   </ItemGroup>
 
   <ItemGroup>

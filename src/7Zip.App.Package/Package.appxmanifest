@@ -48,7 +48,7 @@
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
 
-		<!--<Extensions>
+		<Extensions>
 			<desktop4:Extension Category="windows.fileExplorerContextMenus">
 				<desktop4:FileExplorerContextMenus>
 					<desktop5:ItemType Type="Directory"  >
@@ -69,7 +69,7 @@
 					</com:SurrogateServer>
 				</com:ComServer>
 			</com:Extension>
-		</Extensions>-->
+		</Extensions>
 
 
 	</Application>
