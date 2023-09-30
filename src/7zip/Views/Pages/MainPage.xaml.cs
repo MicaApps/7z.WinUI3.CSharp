@@ -1,5 +1,7 @@
-﻿using _7zip.ViewModels;
+﻿using _7zip.Helpers;
+using _7zip.ViewModels;
 using _7zip.Windows;
+using _7zip.Core.Enums;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -24,7 +26,7 @@ public sealed partial class MainPage
         viewModel.OutputDirPath = outputPathTxtBox.Text;
 
         //设置ViewModel
-        var window = new OperationWindow();
+        var window = WindowManager.CreateWindow(WindowType.Extraction);
         (window.Content as FrameworkElement).DataContext = viewModel;
         window.Activate();
 
@@ -34,7 +36,7 @@ public sealed partial class MainPage
 
     private void Button_Click(object sender, RoutedEventArgs e)
     {
-        var window = new NewCompressionWindow();
+        var window = WindowManager.CreateWindow(WindowType.Compression);
         window.Activate();
     }
 }

@@ -19,7 +19,7 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-
+using _7zip.ViewModels;
 
 namespace _7zip;
 /// <summary>
@@ -28,6 +28,7 @@ namespace _7zip;
 public partial class App : Application
 {
     public static DispatcherQueue MainDispatcherQueue;
+    public static ILogger Logger { get; private set; }
 
     public IHost Host;
 
@@ -49,6 +50,16 @@ public partial class App : Application
     public App()
     {
         this.InitializeComponent();
+
+        EnsureEarlyApp();
+    }
+
+    private void EnsureEarlyApp()
+    {
+        // Configure exception handlers
+        UnhandledException += App_UnhandledException;
+
+        // Configure 7z.dll
         SevenZip.SevenZipBase.SetLibraryPath(Package.Current.InstalledPath + "\\Assets\\7z.dll");
     }
 
@@ -63,21 +74,30 @@ public partial class App : Application
         Frame rootFrame = MainWindow.Current.EnsureWindowIsInitialized();
         rootFrame.Navigate(typeof(Pages.MainPage), args);
 
-        ConfigureServives();
+        Host = ConfigureServives();
 
         m_window.Activate();
     }
 
-    private void ConfigureServives()
+    private IHost ConfigureServives()
     {
-        Host = Microsoft.Extensions.Hosting.Host.
+        return Microsoft.Extensions.Hosting.Host.
             CreateDefaultBuilder().
             UseContentRoot(AppContext.BaseDirectory).
             ConfigureServices((context, services) =>
             {
-           
+                // Configure ViewModels.
+                services.AddTransient<CompressionViewModel>();
+                services.AddTransient<ExtractionViewModel>();
             }).Build();
     }
 
     private Window m_window;
+
+    #region Exception Handlers
+    private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+    {
+        e.Handled = true;
+    }
+    #endregion
 }
