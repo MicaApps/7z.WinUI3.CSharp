@@ -51,26 +51,22 @@
 		<Extensions>
 			<desktop4:Extension Category="windows.fileExplorerContextMenus">
 				<desktop4:FileExplorerContextMenus>
-					<desktop5:ItemType Type="Directory"  >
-						<desktop5:Verb Id="CustomMenu" Clsid="9ee2aaa8-f32e-4e7c-8276-683dab9e7351" />
+					<desktop5:ItemType Type="*">
+						<desktop5:Verb Id="ZipShellExt" Clsid="B3BFA54C-DA02-5983-38BF-369E77A27B6A" />
 					</desktop5:ItemType>
-					<desktop5:ItemType Type="*"  >
-						<desktop5:Verb Id="CustomMenu" Clsid="9ee2aaa8-f32e-4e7c-8276-683dab9e7351" />
-					</desktop5:ItemType>
-					<desktop5:ItemType Type="Directory\Background">
-						<desktop5:Verb Id="CustomMenu" Clsid="9ee2aaa8-f32e-4e7c-8276-683dab9e7351" />
+					<desktop5:ItemType Type="Directory">
+						<desktop5:Verb Id="ZipShellExt" Clsid="B3BFA54C-DA02-5983-38BF-369E77A27B6A" />
 					</desktop5:ItemType>
 				</desktop4:FileExplorerContextMenus>
 			</desktop4:Extension>
 			<com:Extension Category="windows.comServer">
 				<com:ComServer>
-					<com:SurrogateServer  DisplayName="Custome Context Menu">
-						<com:Class Id="9ee2aaa8-f32e-4e7c-8276-683dab9e7351" Path="ContextMenuCustomHost.dll" ThreadingModel="STA"/>
+					<com:SurrogateServer>
+						<com:Class Id="B3BFA54C-DA02-5983-38BF-369E77A27B6A" Path="ZipShellExt\ZipShellExt.dll" ThreadingModel="STA" />
 					</com:SurrogateServer>
 				</com:ComServer>
 			</com:Extension>
 		</Extensions>
-
 
 	</Application>
   </Applications>

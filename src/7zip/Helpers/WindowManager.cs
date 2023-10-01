@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using _7zip.Core.Enums;
-using _7zip.Windows;
+using _7zip.Views.Windows;
 
 namespace _7zip.Helpers
 {
@@ -73,7 +73,7 @@ namespace _7zip.Helpers
         }
 
         static public List<Window> ActiveWindows { get { return _activeWindows; } }
-        static public Window Current => MainWindow.Current;
+        static public Window Current => MainWindow.Instance;
 
         static private List<Window> _activeWindows = new List<Window>();
     }

@@ -20,6 +20,7 @@ using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using _7zip.ViewModels;
+using _7zip.Views.Windows;
 
 namespace _7zip;
 /// <summary>
@@ -69,10 +70,10 @@ public partial class App : Application
     /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
-        m_window = MainWindow.Current;
+        m_window = MainWindow.Instance;
 
-        Frame rootFrame = MainWindow.Current.EnsureWindowIsInitialized();
-        rootFrame.Navigate(typeof(Pages.MainPage), args);
+        Frame rootFrame = MainWindow.Instance.EnsureWindowIsInitialized();
+        rootFrame.Navigate(typeof(Views.Pages.MainPage), args);
 
         Host = ConfigureServives();
 
