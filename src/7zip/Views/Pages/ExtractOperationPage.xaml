@@ -11,11 +11,7 @@
     Background="Transparent"
     mc:Ignorable="d">
     <Page.Resources>
-        <vm:PathToFileNameConverter x:Key="PathToFileNameConverter" />
-        <vm:BooleanInversionConverter x:Key="BooleanInversionConverter" />
-        <vm:BasicCalculateConverter x:Key="BasicCalculateConverter" />
-        <vm:IsPausedSymbolIconConverter x:Key="IsPausedSymbolIconConverter" />
-        <vm:IsStringContainedByConverter x:Key="IsStringContainedByConverter" />
+        
     </Page.Resources>
     <!--  Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"  -->
 

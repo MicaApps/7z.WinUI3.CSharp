@@ -64,6 +64,8 @@
     <None Remove="Assets\Wide310x150Logo.scale-150.png" />
     <None Remove="Assets\Wide310x150Logo.scale-200.png" />
     <None Remove="Assets\Wide310x150Logo.scale-400.png" />
+    <None Remove="Styles\Themes.Dark.xaml" />
+    <None Remove="Styles\Themes.Light.xaml" />
     <None Remove="Views\Pages\ExtractOperationPage.xaml" />
     <None Remove="Views\Pages\MainPage.xaml" />
     <None Remove="Views\Pages\SplashScreenPage.xaml" />
@@ -104,7 +106,17 @@
     <ProjectReference Include="..\7Zip.Core\7Zip.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Page Update="Styles\Themes.Dark.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="Views\Pages\SplashScreenPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Styles\Themes.Light.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

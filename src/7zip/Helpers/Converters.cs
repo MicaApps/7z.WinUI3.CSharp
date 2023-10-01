@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace _7zip.ViewModels
+namespace _7zip.Helpers
 {
     public class PathToFileNameConverter : IValueConverter
     {
