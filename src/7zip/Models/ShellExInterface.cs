@@ -12,20 +12,20 @@ using Windows.Services.Maps;
 
 namespace _7zip.Models
 {
-    internal class ShhelExInterface
+    public class ShellExInterface
     {
         public void ExtractZip(string ZipPath)
         {
-            //创建ViewModel
+            // 创建ViewModel
             ExtractionViewModel viewModel = new ExtractionViewModel(ZipPath);
             viewModel.OutputDirPath = (new FileInfo(ZipPath)).Directory + Path.GetFileNameWithoutExtension(ZipPath);
 
-            //设置ViewModel
+            // 设置ViewModel
             var window = WindowManager.CreateWindow(WindowType.Extraction);
             (window.Content as FrameworkElement).DataContext = viewModel;
             window.Activate();
 
-            //开始解压
+            // 开始解压
             viewModel.ExtractAsync();
         }
     }

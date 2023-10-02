@@ -103,6 +103,7 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\7zip.App.Controls\7Zip.App.Controls.csproj" />
     <ProjectReference Include="..\7Zip.Core\7Zip.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
