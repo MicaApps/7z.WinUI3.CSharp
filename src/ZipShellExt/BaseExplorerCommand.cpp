@@ -153,6 +153,7 @@ namespace winrt::ZipShellExt::implementation
 	{
 		// 用户点击了菜单后，触发的命令。其中IShellItemArray包含点击菜单后选中项目的信息。
 		constexpr winrt::guid uuid = winrt::guid_of<SevenZipCommand>();
+		
 		return S_OK;
 	}
 
