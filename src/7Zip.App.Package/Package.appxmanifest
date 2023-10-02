@@ -61,8 +61,8 @@
 			</desktop4:Extension>
 			<com:Extension Category="windows.comServer">
 				<com:ComServer>
-					<com:SurrogateServer>
-						<com:Class Id="B3BFA54C-DA02-5983-38BF-369E77A27B6A" Path="ZipShellExt\ZipShellExt.dll" ThreadingModel="STA" />
+					<com:SurrogateServer DisplayName="Custome Context Menu">
+						<com:Class Id="B3BFA54C-DA02-5983-38BF-369E77A27B6A" Path="ZipShellExt\7Zip.App.ZipShellExt.dll" ThreadingModel="STA" />
 					</com:SurrogateServer>
 				</com:ComServer>
 			</com:Extension>
