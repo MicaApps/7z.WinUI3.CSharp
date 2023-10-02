@@ -36,7 +36,7 @@
             </MenuBarItem>
             <MenuBarItem Title="编辑">
                 <MenuFlyoutItem Text="全选" />
-                <MenuFlyoutItem Text="全部取消" />
+                <MenuFlyoutItem Text="全部取消2" />
                 <MenuFlyoutItem Text="反选" />
                 <MenuFlyoutItem Text="选择" />
                 <MenuFlyoutItem Text="取消选择" />
