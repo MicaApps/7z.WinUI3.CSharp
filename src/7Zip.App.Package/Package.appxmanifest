@@ -9,6 +9,7 @@
   xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
   xmlns:desktop5="http://schemas.microsoft.com/appx/manifest/desktop/windows10/5"
   xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+  xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
   IgnorableNamespaces="uap rescap">
 
@@ -49,6 +50,13 @@
       </uap:VisualElements>
 
 		<Extensions>
+      <uap5:Extension Category="windows.appExecutionAlias" 
+                      EntryPoint="$targetentrypoint$" 
+                      Executable="$targetnametoken$.exe">
+        <uap5:AppExecutionAlias>
+          <uap5:ExecutionAlias Alias="7Zip.App.exe" />
+        </uap5:AppExecutionAlias>
+      </uap5:Extension>
 			<desktop4:Extension Category="windows.fileExplorerContextMenus">
 				<desktop4:FileExplorerContextMenus>
 					<desktop5:ItemType Type="*">
