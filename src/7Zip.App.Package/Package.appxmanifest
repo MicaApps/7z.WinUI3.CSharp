@@ -66,8 +66,15 @@
 					</com:SurrogateServer>
 				</com:ComServer>
 			</com:Extension>
+			
+			<uap3:Extension Category="windows.appExecutionAlias">
+				<uap3:AppExecutionAlias>
+					<desktop:ExecutionAlias Alias="7zip.exe"/>
+				</uap3:AppExecutionAlias>
+			</uap3:Extension>
 		</Extensions>
 
+		
 	</Application>
   </Applications>
 

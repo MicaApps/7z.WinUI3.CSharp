@@ -1,26 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using Microsoft.UI.Xaml.Shapes;
+using Microsoft.Windows.AppLifecycle;
 using Windows.ApplicationModel;
-using Windows.ApplicationModel.Activation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+
 using _7zip.ViewModels;
 using _7zip.Views.Windows;
+using AppInstance = Microsoft.Windows.AppLifecycle.AppInstance;
+using Microsoft.Windows.AppNotifications.Builder;
+using Microsoft.Windows.AppNotifications;
 
 namespace _7zip;
 /// <summary>
@@ -71,13 +63,34 @@ public partial class App : Application
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
         m_window = MainWindow.Instance;
-
-        Frame rootFrame = MainWindow.Instance.EnsureWindowIsInitialized();
-        rootFrame.Navigate(typeof(Views.Pages.MainPage), args);
-
         Host = ConfigureServives();
 
-        m_window.Activate();
+        AppInstance appInstance = AppInstance.GetCurrent();
+        if (appInstance != null) 
+        {
+            ExtendedActivationKind kind = appInstance.GetActivatedEventArgs().Kind;
+
+            if (kind == ExtendedActivationKind.Launch)
+            {
+                Frame rootFrame = MainWindow.Instance.EnsureWindowIsInitialized();
+                rootFrame.Navigate(typeof(Views.Pages.MainPage), args);
+                m_window.Activate();
+            }
+
+            else if(kind == ExtendedActivationKind.CommandLineLaunch)
+            {
+                var notification = new AppNotificationBuilder()
+                .AddArgument("action", "viewConversation")
+                .AddArgument("conversationId", "9813")
+                .AddText("Andrew sent you a picture")
+                .AddText("Check this out, The Enchantments in Washington!")
+                .BuildNotification();
+
+                AppNotificationManager.Default.Show(notification);
+            }
+        }
+        
+        
     }
 
     private IHost ConfigureServives()
@@ -100,5 +113,9 @@ public partial class App : Application
     {
         e.Handled = true;
     }
+    #endregion
+
+    #region Rich Activation
+
     #endregion
 }
