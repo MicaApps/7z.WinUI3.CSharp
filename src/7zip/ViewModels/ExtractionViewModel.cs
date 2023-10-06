@@ -25,8 +25,8 @@ namespace _7zip.ViewModels
     {
         #region Private Fields
         Type thisType;
-        bool shouldPause = false;
-        bool shouldCancelWork = false;
+        bool pauseRequested = false;
+        bool cancelRequested = false;
         int[] filesIndexToExtract;
         string tempOutputDir;
         SemaphoreSlim pauseWorkSemaphore = new(1, 1);
@@ -161,8 +161,8 @@ namespace _7zip.ViewModels
 
         private void Extractor_FileExtractionStarted(object sender, FileInfoEventArgs e)
         {
-            e.Cancel = shouldCancelWork;
-            if (shouldCancelWork)
+            e.Cancel = cancelRequested;
+            if (cancelRequested)
             {
                 SetPropertyFromUIThreadAsync(nameof(ExtractionStatus), ExtractionStatus.Cancelled);
             }
@@ -182,7 +182,7 @@ namespace _7zip.ViewModels
                 return;
             }
 
-            if (shouldPause)
+            if (pauseRequested)
             {
                 SetPropertyFromUIThreadAsync(nameof(ExtractionStatus), ExtractionStatus.Paused);
                 pauseWorkSemaphore.Wait();
@@ -241,7 +241,7 @@ namespace _7zip.ViewModels
         [RelayCommand]
         public void CancelWork()
         {
-            shouldCancelWork = true;
+            cancelRequested = true;
             ExtractionStatus = ExtractionStatus.Cancelling;
             ResumeWork(); //取消解压时，需要使暂停的解压操作继续，来取消线程(信号量)堵塞，以执行取消操作。
         }
@@ -249,22 +249,22 @@ namespace _7zip.ViewModels
         [RelayCommand]
         public void PauseWork()
         {
-            if (!shouldPause)
+            if (!pauseRequested)
             {
                 ExtractionStatus = ExtractionStatus.Pausing;
                 pauseWorkSemaphore.Wait();
-                shouldPause = true;
+                pauseRequested = true;
             }
         }
 
         [RelayCommand]
         public void ResumeWork()
         {
-            if (shouldPause)
+            if (pauseRequested)
             {
                 pauseWorkSemaphore.Release();
-                shouldPause = false;
-                if (!shouldCancelWork)
+                pauseRequested = false;
+                if (!cancelRequested)
                     ExtractionStatus = ExtractionStatus.Extracting;
             }
         }
@@ -272,7 +272,7 @@ namespace _7zip.ViewModels
         [RelayCommand]
         public void TogglePause()
         {
-            if (shouldPause)
+            if (pauseRequested)
                 ResumeWork();
             else PauseWork();
         }
