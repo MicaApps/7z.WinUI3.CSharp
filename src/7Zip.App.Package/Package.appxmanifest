@@ -36,9 +36,9 @@
   </Resources>
 
   <Applications>
-    <Application Id="App"
-      Executable="$targetnametoken$.exe"
-      EntryPoint="$targetentrypoint$">
+    <Application Id="EnvironmentVariables"
+      EntryPoint="$targetentrypoint$"
+      Executable="$targetnametoken$.exe">
       <uap:VisualElements
         DisplayName="7zip"
         Description="7zip"
@@ -50,9 +50,7 @@
       </uap:VisualElements>
 
 		<Extensions>
-      <uap5:Extension Category="windows.appExecutionAlias" 
-                      EntryPoint="$targetentrypoint$" 
-                      Executable="$targetnametoken$.exe">
+      <uap5:Extension Category="windows.appExecutionAlias">
         <uap5:AppExecutionAlias>
           <uap5:ExecutionAlias Alias="7Zip.App.exe" />
         </uap5:AppExecutionAlias>

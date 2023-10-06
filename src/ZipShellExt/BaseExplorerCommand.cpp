@@ -206,6 +206,16 @@ namespace winrt::ZipShellExt::implementation
 	IFACEMETHODIMP ExtractToCommand::Invoke(_In_opt_ IShellItemArray* selection, _In_opt_ IBindCtx*)
 	{
 		constexpr winrt::guid uuid = winrt::guid_of<ExtractToCommand>();
+
+		std::string executeCommandLine = "7Zip.App.exe";
+		LPTSTR cWinDir = new TCHAR[MAX_PATH];
+
+		GetCurrentDirectory(MAX_PATH, cWinDir);
+
+		MessageBox(NULL, cWinDir, NULL, MB_OK);
+
+		WinExec(executeCommandLine.c_str(), SW_HIDE);
+
 		return S_OK;
 	}
 
