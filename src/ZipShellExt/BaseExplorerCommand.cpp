@@ -207,21 +207,8 @@ namespace winrt::ZipShellExt::implementation
 	{
 		constexpr winrt::guid uuid = winrt::guid_of<ExtractToCommand>();
 
-<<<<<<< HEAD
-		winrt::com_ptr<IShellItem> item;
-		selection->GetItemAt(0, item.put());
-
-		LPWSTR displayName = nullptr;
-		item->GetDisplayName(SIGDN_FILESYSPATH, &displayName);
-
-		std::wstring appName = L"7Zip.App.exe";
-		std::wstring commandLineStr = appName + L" -extract " + displayName;
-		
-		LPWSTR cmdLine = StrDupW(commandLineStr.c_str());
 
 		LPTSTR cWinDir = new TCHAR[MAX_PATH];
-=======
-		std::string executeCommandLine = "7Zip.App.exe";
 		std::vector<std::wstring> FilePaths;
 
 		if (selection)
@@ -246,6 +233,11 @@ namespace winrt::ZipShellExt::implementation
 				}
 			}
 		}
+
+		std::wstring appName = L"7Zip.App.exe";
+		std::wstring commandLineStr = appName + L" -extract " + FilePaths.at(0);
+
+		LPWSTR cmdLine = StrDupW(commandLineStr.c_str());
 
 		STARTUPINFO si;
 		PROCESS_INFORMATION pi;
