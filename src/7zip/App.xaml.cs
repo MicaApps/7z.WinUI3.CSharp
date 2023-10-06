@@ -1,24 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using Microsoft.UI.Xaml.Shapes;
 using Windows.ApplicationModel;
-using Windows.ApplicationModel.Activation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using _7zip.ViewModels;
 using _7zip.Views.Windows;
 
@@ -28,6 +16,12 @@ namespace _7zip;
 /// </summary>
 public partial class App : Application
 {
+    static string[] commandLine;
+    /// <summary>
+    /// 获取应用启动时的命令行字符串数组。
+    /// 注：CommandLine[0]始终为应用主dll的完整路径，C++调用CreateProcess传入的参数从CommandLine[1]开始存储。
+    /// </summary>
+    public static string[] CommandLine => commandLine ??= Environment.GetCommandLineArgs();
     public static DispatcherQueue MainDispatcherQueue;
     public static ILogger Logger { get; private set; }
 
@@ -62,6 +56,11 @@ public partial class App : Application
 
         // Configure 7z.dll
         SevenZip.SevenZipBase.SetLibraryPath(Package.Current.InstalledPath + "\\Assets\\7z.dll");
+
+        //这里用于测试时输出命令行字符串。
+        //string commandLineOutputPath = "D:\\github\\7zipoutput.txt";
+        //File.Delete(commandLineOutputPath);
+        //foreach (var s in CommandLine) File.AppendAllText(commandLineOutputPath, s);
     }
 
     /// <summary>
@@ -70,14 +69,35 @@ public partial class App : Application
     /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
+        Host = ConfigureServives();
+        if (CommandLine.Length >=3 && CommandLine[1] == "-extract")
+        {
+            ExtractTest();
+            return;
+        }
+
         m_window = MainWindow.Instance;
 
         Frame rootFrame = MainWindow.Instance.EnsureWindowIsInitialized();
         rootFrame.Navigate(typeof(Views.Pages.MainPage), args);
 
-        Host = ConfigureServives();
+
 
         m_window.Activate();
+    }
+
+    private async void ExtractTest()
+    {
+        string targetArchivePath = CommandLine[2];
+        string outputPath = Path.GetDirectoryName(targetArchivePath);
+        var extractViewModel = GetService<ExtractionViewModel>();
+        extractViewModel.ArchivePath = targetArchivePath;
+        extractViewModel.OutputDirPath = outputPath;
+        var ui = new OperationWindow();
+        (ui.Content as FrameworkElement).DataContext = extractViewModel;
+        ui.Activate();
+        await extractViewModel.ExtractAsync();
+        Application.Current.Exit();
     }
 
     private IHost ConfigureServives()
