@@ -13,6 +13,8 @@ public sealed partial class OperationWindow
     public OperationWindow()
     {
         InitializeComponent();
+
+        App.MainDispatcherQueue = this.DispatcherQueue;
         this.CenterOnScreen();
         ExtendsContentIntoTitleBar = true;
         Title = AppWindow.Title;

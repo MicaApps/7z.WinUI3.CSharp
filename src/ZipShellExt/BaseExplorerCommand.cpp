@@ -207,7 +207,8 @@ namespace winrt::ZipShellExt::implementation
 	{
 		constexpr winrt::guid uuid = winrt::guid_of<ExtractToCommand>();
 
-		std::string executeCommandLine = "7Zip.App.exe";
+
+		LPTSTR cWinDir = new TCHAR[MAX_PATH];
 		std::vector<std::wstring> FilePaths;
 
 		if (selection)
@@ -233,9 +234,21 @@ namespace winrt::ZipShellExt::implementation
 			}
 		}
 
-		MessageBox(NULL, FilePaths[0].c_str(), NULL, MB_OK);
+		std::wstring appName = L"7Zip.App.exe";
+		std::wstring commandLineStr = appName + L" -extract " + FilePaths.at(0);
 
-		WinExec(executeCommandLine.c_str(), SW_HIDE);
+		LPWSTR cmdLine = StrDupW(commandLineStr.c_str());
+
+		STARTUPINFO si;
+		PROCESS_INFORMATION pi;
+		ZeroMemory(&si, sizeof(si));
+		ZeroMemory(&pi, sizeof(pi));
+
+		CreateProcessW(NULL,cmdLine, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+		int lastErr = GetLastError();
+		//MessageBox(NULL, cmdLine,NULL,MB_OK);
+		//MessageBox(NULL, std::to_wstring(lastErr).c_str(),NULL,MB_OK );
+		//WinExec(executeCommandLine.c_str(), SW_HIDE);
 
 		return S_OK;
 	}
