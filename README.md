@@ -1,3 +1,7 @@
-# 7z.WinUI3.CSharp
+# ![7z](https://github.com/MicaApps/7z.WinUI3.CSharp/assets/6630660/f5a30a5b-5f20-4242-8ed2-a3cb12e23081) 7z.WinUI3.CSharp
 
 ![image](https://github.com/MicaApps/7z.WinUI3.CSharp/assets/6630660/0f79642a-6864-4ca6-9c3e-9174ff1c2ca8)
+
+## Design File
+
+https://www.figma.com/file/0cUNzERRnP8b89izPG5g4o/Icon?type=design&node-id=103%3A2&mode=design&t=lMii5PiVKP2SYII2-1
