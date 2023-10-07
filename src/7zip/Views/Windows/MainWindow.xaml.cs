@@ -16,7 +16,7 @@ public sealed partial class MainWindow : WindowEx
 
     private static MainWindow _instance;
 
-    public static MainWindow Instance => _instance ?? (_instance = new MainWindow());
+    public static MainWindow Instance => _instance ??= new MainWindow();
 
     public MainWindow()
     {

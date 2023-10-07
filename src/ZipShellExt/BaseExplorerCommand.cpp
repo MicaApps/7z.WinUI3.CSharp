@@ -206,11 +206,11 @@ namespace winrt::ZipShellExt::implementation
 	IFACEMETHODIMP ExtractToCommand::Invoke(_In_opt_ IShellItemArray* selection, _In_opt_ IBindCtx*)
 	{
 		constexpr winrt::guid uuid = winrt::guid_of<ExtractToCommand>();
-
-		std::string executeCommandLine = "7Zip.App.exe";
 		std::vector<std::wstring> FilePaths;
 
-		if (selection)
+		//获取选择的所有文件的路径
+		//Get paths of all selected files
+		if (selection) 
 		{
 			DWORD Count = 0;
 			if (SUCCEEDED(selection->GetCount(&Count)))
@@ -233,10 +233,19 @@ namespace winrt::ZipShellExt::implementation
 			}
 		}
 
-		MessageBox(NULL, FilePaths[0].c_str(), NULL, MB_OK);
+		std::wstring appName = L"7Zip.App.exe";
+		std::wstring commandLineStr = appName + L" -extract " + FilePaths.at(0);
+		//这里目前只选取了第一个文件的路径，后期做叠加窗口
+		LPWSTR cmdLine = StrDupW(commandLineStr.c_str());
 
-		WinExec(executeCommandLine.c_str(), SW_HIDE);
+		STARTUPINFO si;
+		PROCESS_INFORMATION pi;
+		ZeroMemory(&si, sizeof(si));
+		ZeroMemory(&pi, sizeof(pi));
 
+		CreateProcessW(NULL,cmdLine, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+		int lastErr = GetLastError();
+		
 		return S_OK;
 	}
 
@@ -282,6 +291,44 @@ namespace winrt::ZipShellExt::implementation
 	IFACEMETHODIMP AddTo7zCommand::Invoke(_In_opt_ IShellItemArray* selection, _In_opt_ IBindCtx*)
 	{
 		constexpr winrt::guid uuid = winrt::guid_of<AddTo7zCommand>();
+		std::vector<std::wstring> FilePaths;
+
+		if (selection)
+		{
+			DWORD Count = 0;
+			if (SUCCEEDED(selection->GetCount(&Count)))
+			{
+				for (DWORD i = 0; i < Count; ++i)
+				{
+					winrt::com_ptr<IShellItem> Item;
+					if (SUCCEEDED(selection->GetItemAt(i, Item.put())))
+					{
+						LPWSTR DisplayName = nullptr;
+						if (SUCCEEDED(Item->GetDisplayName(
+							SIGDN_FILESYSPATH,
+							&DisplayName)))
+						{
+							FilePaths.push_back(std::wstring(DisplayName));
+							::CoTaskMemFree(DisplayName);
+						}
+					}
+				}
+			}
+		}
+
+		std::wstring appName = L"7Zip.App.exe";
+		std::wstring commandLineStr = appName + L" -compress " + L"-7z "+ FilePaths.at(0);
+		//这里目前只选取了第一个文件的路径，后期做叠加窗口
+		LPWSTR cmdLine = StrDupW(commandLineStr.c_str());
+
+		STARTUPINFO si;
+		PROCESS_INFORMATION pi;
+		ZeroMemory(&si, sizeof(si));
+		ZeroMemory(&pi, sizeof(pi));
+
+		CreateProcessW(NULL, cmdLine, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+		int lastErr = GetLastError();
+
 		return S_OK;
 	}
 
