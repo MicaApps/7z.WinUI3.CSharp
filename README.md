@@ -8,4 +8,4 @@ This project aims to provide a modern UI partial to 7z
 
 ## Design File
 
-<img src=https://www.figma.com/file/0cUNzERRnP8b89izPG5g4o/Icon?type=design&node-id=103%3A2&mode=design&t=lMii5PiVKP2SYII2-1 width=500/>
+<img src=https://www.figma.com/file/0cUNzERRnP8b89izPG5g4o/Icon?type=design&node-id=103%3A2&mode=design&t=lMii5PiVKP2SYII2-1 width=400/>
