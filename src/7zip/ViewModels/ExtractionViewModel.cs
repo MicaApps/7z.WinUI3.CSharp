@@ -86,6 +86,12 @@ namespace _7zip.ViewModels
         [ObservableProperty]
         int extractedFilesCount = 0;
 
+        /// <summary>
+        /// 获取或设置已解压完毕的压缩包个数。
+        /// </summary>
+        [ObservableProperty]
+        int extractedArchivesCount = 0;
+
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsPausing))]
@@ -95,6 +101,8 @@ namespace _7zip.ViewModels
         [NotifyPropertyChangedFor(nameof(IsCancelled))]
         [NotifyPropertyChangedFor(nameof(IsExtracting))]
         ExtractionStatus extractionStatus;
+
+        public int TotalArchivesCount => ExtractionInfos.Count;
 
         /// <summary>
         /// 获取或设置一个值，指示了当前解压操作是否正在暂停。
@@ -203,7 +211,8 @@ namespace _7zip.ViewModels
 
         private void Extractor_Extracting(object sender, ProgressEventArgs e)
         {
-            SetPropertyFromUIThreadAsync(nameof(ExtractPercentage), e.PercentDone / 100f);
+            float percentage = (ExtractedArchivesCount + e.PercentDone / 100f) / TotalArchivesCount;
+            SetPropertyFromUIThreadAsync(nameof(ExtractPercentage), percentage);
         }
 
         private void ExtractViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -226,6 +235,7 @@ namespace _7zip.ViewModels
             };
             Debug.WriteLine($"[{nameof(ResetExtractionStatus)}] using \"{tempOutputDir}\" as temp directory.");
 
+            ExtractedArchivesCount = 0;
             ExtractPercentage = 0;
             ExtractedFilesCount = 0;
             TotalFilesCount = -1;
@@ -329,7 +339,7 @@ namespace _7zip.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"[At {nameof(Extractor_ExtractionFinished)}]:{ex.Message}");
+                    Debug.WriteLine($"[{nameof(Extractor_ExtractionFinished)}]:{ex.Message}");
                     //待定异常处理
                 }
             }
@@ -344,6 +354,7 @@ namespace _7zip.ViewModels
                 extractors[i] = new SevenZipExtractor(ExtractionInfos[i].ArchivePath); //为每个ExtractionInfo初始化解压对象。
                 totalFilesCount += extractors[i].ArchiveFileData.Count;  //获取总文件个数。
             }
+
             for (int i = 0; i < extractors.Length; i++)
             {
                 var extractor = extractors[i];
@@ -352,9 +363,23 @@ namespace _7zip.ViewModels
                 SetPropertyFromUIThreadAsync(nameof(TotalFilesCount), totalFilesCount);
                 SetPropertyFromUIThreadAsync(nameof(ExtractionStatus), ExtractionStatus.Extracting);
 
-                extractor.ExtractFiles(OutputDirPath, ExtractionInfos[i].FileIndexsToExtract);
-                EventLogOffFor(extractor);
-                extractor.Dispose();
+                try
+                {
+                    extractor.ExtractFiles(OutputDirPath, ExtractionInfos[i].FileIndexsToExtract);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[{nameof(InnerExtract)}]:{ex.Message}");
+                }
+                finally
+                {
+                    EventLogOffFor(extractor);
+                    extractor.Dispose();
+                    extractor = null;
+                }
+
+                if (ExtractionStatus == ExtractionStatus.Cancelled)
+                    foreach(var e in extractors[(i+1)..]) e.Dispose(); //在取消时dispose掉剩余的extractor。
             }
         }
 
