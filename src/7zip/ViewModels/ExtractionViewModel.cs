@@ -25,11 +25,24 @@ namespace _7zip.ViewModels
     {
         #region Private Fields
         Type thisType;
+        bool isWorking = false;
         bool pauseRequested = false;
         bool cancelRequested = false;
-        string tempOutputDir;
+        string tempOutputDir; //中转目录的路径。
         SemaphoreSlim pauseWorkSemaphore = new(1, 1);
-        List<ArchiveFileInfo> extractedFiles = new(10);
+        List<ArchiveFileInfo> extractedFiles = new(10); //已经导出的压缩文件内部文件信息。
+        #endregion
+
+        #region MVVM Observable Back-Fields
+        ExtractionTempOutputPosition tempOutputPosition;
+        string outputDirPath;
+        float extractPercentage;
+        ArchiveFileInfo currentExtractingArchiveInfo;
+        int totalFilesCount;
+        int extractedFilesCount;
+        int extractedArchivesCount;
+        ExtractionInfoViewModel currentExtractionInfo;
+        ExtractionStatus extractionStatus;
         #endregion
 
         #region MVVM Properties
@@ -39,73 +52,79 @@ namespace _7zip.ViewModels
         public List<ExtractionInfoViewModel> ExtractionInfos { get; private set; }
 
         /// <summary>
-        /// 要导出的文件的索引集合。若为空，则解压所有文件。该集合不应有重复元素。
-        /// </summary>
-        [ObservableProperty]
-        ObservableCollection<int> fileIndexes = new();
-
-        /// <summary>
         /// 获取或设置解压使用的中转缓存目录位置。
         /// </summary>
-        [ObservableProperty]
-        ExtractionTempOutputPosition tempOutputPosition;
+        public ExtractionTempOutputPosition TempOutputPosition
+        {
+            get => tempOutputPosition;
+            set { if (!isWorking) SetProperty(ref tempOutputPosition, value); }
+        }
 
         /// <summary>
         /// 获取或设置解压的目标输出路径。
         /// </summary>
-        [ObservableProperty]
-        string outputDirPath;
+        public string OutputDirPath
+        {
+            get => outputDirPath;
+            set { if (!isWorking) SetProperty(ref outputDirPath, value); }
+        }
 
         /// <summary>
         /// 获取或设置当前解压操作的总进度(0f-1f)。
         /// </summary>
-        [ObservableProperty]
-        float extractPercentage;
-
-        /// <summary>
-        /// 获取或设置当前正在解压的文件名。
-        /// </summary>
-        [ObservableProperty]
-        string currentExtractingFileName;
-
-        /// <summary>
-        /// 获取或设置当前正在解压的文件索引。
-        /// </summary>
-        [ObservableProperty]
-        int currentExtractingIndex;
+        public float ExtractPercentage
+        {
+            get => extractPercentage;
+            private set => SetProperty(ref extractPercentage, value);
+        }
 
         /// <summary>
         /// 获取或设置需要导出的文件总个数。
         /// </summary>
-        [ObservableProperty]
-        int totalFilesCount = -1;
+        public int TotalFilesCount
+        {
+            get => totalFilesCount;
+            private set => SetProperty(ref totalFilesCount, value);
+        }
 
         /// <summary>
-        /// 获取或设置已导出的文件个数。
+        /// 获取已导出的文件个数。
         /// </summary>
-        [ObservableProperty]
-        int extractedFilesCount = 0;
+        public int ExtractedFilesCount
+        {
+            get => extractedFilesCount;
+            private set => SetProperty(ref extractedFilesCount, value); 
+        }
 
         /// <summary>
-        /// 获取或设置已解压完毕的压缩包个数。
+        /// 获取已解压完毕的压缩包个数。
         /// </summary>
-        [ObservableProperty]
-        int extractedArchivesCount = 0;
+        public int ExtractedArchivesCount
+        {
+            get => extractedArchivesCount;
+            private set => SetProperty(ref extractedArchivesCount, value);
+        }
 
         /// <summary>
-        /// 
+        /// 获取当前的导出信息。
         /// </summary>
-        [ObservableProperty]
-        ExtractionInfoViewModel currentExtractionInfo;
+        public ExtractionInfoViewModel CurrentExtractionInfo
+        {
+            get => currentExtractionInfo;
+            private set => SetProperty(ref currentExtractionInfo, value);
+        }
 
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsPausing))]
-        [NotifyPropertyChangedFor(nameof(IsPaused))]
-        [NotifyPropertyChangedFor(nameof(IsFinished))]
-        [NotifyPropertyChangedFor(nameof(IsCancelling))]
-        [NotifyPropertyChangedFor(nameof(IsCancelled))]
-        [NotifyPropertyChangedFor(nameof(IsExtracting))]
-        ExtractionStatus extractionStatus;
+        public ExtractionStatus ExtractionStatus
+        {
+            get => extractionStatus;
+            private set => SetProperty(ref extractionStatus, value);
+        }
+
+        public ArchiveFileInfo CurrentExtractingArchiveInfo
+        {
+            get => currentExtractingArchiveInfo;
+            private set => SetProperty(ref currentExtractingArchiveInfo, value);
+        }
 
         public int TotalArchivesCount => ExtractionInfos.Count;
 
@@ -186,8 +205,7 @@ namespace _7zip.ViewModels
                 SetPropertyFromUIThreadAsync(nameof(ExtractionStatus), ExtractionStatus.Cancelled);
             }
 
-            SetPropertyFromUIThreadAsync(nameof(CurrentExtractingFileName), e.FileInfo.FileName);
-            SetPropertyFromUIThreadAsync(nameof(CurrentExtractingIndex), e.FileInfo.Index);
+            SetPropertyFromUIThreadAsync(nameof(CurrentExtractingArchiveInfo), e.FileInfo);
         }
 
         private void Extractor_FileExtractionFinished(object sender, FileInfoEventArgs e)
@@ -197,7 +215,7 @@ namespace _7zip.ViewModels
 
             if (ExtractedFilesCount == TotalFilesCount)
             {
-                OnExtractionCompleted();
+                OnExtractionSucceeded();
                 SetPropertyFromUIThreadAsync(nameof(ExtractionStatus), ExtractionStatus.Finished);
                 return;
             }
@@ -219,6 +237,17 @@ namespace _7zip.ViewModels
 
         private void ExtractViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
+            switch(e.PropertyName)
+            {
+                case nameof(ExtractionStatus):
+                    OnPropertyChanged(nameof(IsPausing));
+                    OnPropertyChanged(nameof(IsPaused));
+                    OnPropertyChanged(nameof(IsCancelling));
+                    OnPropertyChanged(nameof(IsCancelled));
+                    OnPropertyChanged(nameof(IsExtracting));
+                    OnPropertyChanged(nameof(IsFinished));
+                    break;
+            }
         }
 
         /// <summary>
@@ -362,16 +391,15 @@ namespace _7zip.ViewModels
             {
                 var extractor = extractors[i];
                 SetPropertyFromUIThreadAsync(nameof(CurrentExtractionInfo), ExtractionInfos[i]).Wait();
-                EventStartupFor(extractor);
-
                 SetPropertyFromUIThreadAsync(nameof(TotalFilesCount), totalFilesCount);
                 SetPropertyFromUIThreadAsync(nameof(ExtractionStatus), ExtractionStatus.Extracting);
 
+                EventStartupFor(extractor);
                 try
                 {
                     //如果extractionInfo的FileIndexesToExtract为空，则导出所有文件，否则仅导出这些文件
                     extractor.ExtractFiles(tempOutputDir,
-                        CurrentExtractionInfo.ShouldExtractAllFiles ? 
+                        CurrentExtractionInfo.ShouldExtractAllFiles ?
                         GetIndexesForExtraction(extractor) : CurrentExtractionInfo.FileIndexsToExtract);
                 }
                 catch (Exception ex)
@@ -386,20 +414,30 @@ namespace _7zip.ViewModels
                 }
 
                 if (ExtractionStatus == ExtractionStatus.Cancelled)
-                    foreach(var e in extractors[(i+1)..]) e.Dispose(); //在取消时dispose掉剩余的extractor。
+                {
+                    foreach (var e in extractors[(i + 1)..]) { e.Dispose(); } //在取消时dispose掉剩余的extractor。
+                    break;
+                }
             }
+            OnExtractionFinishedOrCancelled();
         }
 
         /// <summary>
-        /// 处理所有压缩文件解压完毕后的操作。
+        /// 处理所有压缩文件 *成功* 解压完毕后的操作。
         /// </summary>
-        void OnExtractionCompleted()
+        void OnExtractionSucceeded()
         {
             if (TempOutputPosition != ExtractionTempOutputPosition.Direct)
             {
                 FileSystem.CopyDirectory(tempOutputDir, OutputDirPath, UIOption.AllDialogs, UICancelOption.DoNothing);
             }
+        }
 
+        /// <summary>
+        /// 执行解压结束时的操作。
+        /// </summary>
+        void OnExtractionFinishedOrCancelled()
+        {
             DeleteTempDirectory();
         }
 
@@ -409,10 +447,43 @@ namespace _7zip.ViewModels
             return extractor.ArchiveFileData.Select(d => d.Index).ToArray();
         }
 
+        /// <summary>
+        /// 检查参数是否有效。
+        /// </summary>
+        /// <returns></returns>
+        bool CheckParameters()
+        {
+            return ExtractionInfos.Any()
+                && InitializeOutputDirectory();
+        }
+
+        /// <summary>
+        /// 初始化输出目录。
+        /// </summary>
+        /// <returns>成功返回true，否则返回false。</returns>
+        bool InitializeOutputDirectory()
+        {
+            bool success = true;
+            try
+            {
+                Directory.CreateDirectory(OutputDirPath);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[{nameof(InitializeOutputDirectory)}]:{ex.Message}");
+                success = false;
+            }
+            return success;
+        }
+
+
         [RelayCommand]
         public async Task ExtractAsync()
         {
+            if (!CheckParameters()) return;
+            isWorking = true;
             await Task.Run(InnerExtract);
+            isWorking = false;
         }
     }
 
@@ -435,6 +506,9 @@ namespace _7zip.ViewModels
     /// </summary>
     public enum ExtractionTempOutputPosition
     {
+        /// <summary>
+        /// 等同于TempFolder。
+        /// </summary>
         Default = 0,
         /// <summary>
         /// 不使用中转目录。

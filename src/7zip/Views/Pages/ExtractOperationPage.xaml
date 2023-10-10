@@ -46,7 +46,7 @@
                     Spacing="5"
                     Visibility="{Binding IsExtracting}">
                     <TextBlock Text="正在解压" />
-                    <TextBlock Foreground="{ThemeResource SystemBaseMediumHighColor}" Text="{Binding CurrentExtractingFileName}" />
+                    <TextBlock Foreground="{ThemeResource SystemBaseMediumHighColor}" Text="{Binding CurrentExtractingArchiveInfo.FileName}" />
                 </StackPanel>
                 <Grid>
                     <TextBlock Text="解压成功完成。" Visibility="{Binding IsFinished}" />
