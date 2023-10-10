@@ -10,9 +10,7 @@
     d:DataContext="{d:DesignInstance Type=vm:ExtractionViewModel}"
     Background="Transparent"
     mc:Ignorable="d">
-    <Page.Resources>
-        
-    </Page.Resources>
+    <Page.Resources />
     <!--  Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"  -->
 
 
@@ -36,7 +34,7 @@
             <TextBlock
                 MaxWidth="240"
                 Foreground="{ThemeResource SystemBaseMediumColor}"
-                Text="{Binding ArchivePath, Converter={StaticResource PathToFileNameConverter}}" />
+                Text="{Binding CurrentExtractionInfo.ArchivePath, Converter={StaticResource PathToFileNameConverter}}" />
         </StackPanel>
         <StackPanel
             Grid.Row="1"

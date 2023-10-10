@@ -96,8 +96,7 @@ public partial class App : Application
     {
         string targetArchivePath = CommandLine[2];
         string outputPath = Path.GetDirectoryName(targetArchivePath);
-        var extractViewModel = GetService<ExtractionViewModel>();
-        extractViewModel.ArchivePath = targetArchivePath;
+        var extractViewModel = new ExtractionViewModel(new ExtractionInfoViewModel[] { new ExtractionInfoViewModel(targetArchivePath,null) });
         extractViewModel.OutputDirPath = outputPath;
         var ui = new OperationWindow();
         (ui.Content as FrameworkElement).DataContext = extractViewModel;

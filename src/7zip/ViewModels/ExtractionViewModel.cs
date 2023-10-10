@@ -36,7 +36,7 @@ namespace _7zip.ViewModels
         /// <summary>
         /// 获取要导出的压缩文件的路径。
         /// </summary>
-        public List<ExtractionInfo> ExtractionInfos { get; private set; }
+        public List<ExtractionInfoViewModel> ExtractionInfos { get; private set; }
 
         /// <summary>
         /// 要导出的文件的索引集合。若为空，则解压所有文件。该集合不应有重复元素。
@@ -92,6 +92,11 @@ namespace _7zip.ViewModels
         [ObservableProperty]
         int extractedArchivesCount = 0;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        [ObservableProperty]
+        ExtractionInfoViewModel currentExtractionInfo;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsPausing))]
@@ -131,7 +136,7 @@ namespace _7zip.ViewModels
 
         public bool IsExtracting => ExtractionStatus == ExtractionStatus.Extracting;
         #endregion
-        public ExtractionViewModel(IEnumerable<ExtractionInfo> extractionInfos)
+        public ExtractionViewModel(IEnumerable<ExtractionInfoViewModel> extractionInfos)
         {
             ExtractionInfos = extractionInfos.ToList() ?? throw new ArgumentNullException(nameof(extractionInfos));
             this.PropertyChanged += ExtractViewModel_PropertyChanged;
@@ -163,19 +168,14 @@ namespace _7zip.ViewModels
 
         private void Extractor_ExtractionFinished(object sender, EventArgs e)
         {
+            if (ExtractionStatus != ExtractionStatus.Cancelled)
+                SetPropertyFromUIThreadAsync(nameof(ExtractedArchivesCount), ExtractedArchivesCount+ 1).Wait();
             //如果因取消而结束，应当删除已经导出的文件。
             if (ExtractionStatus == ExtractionStatus.Cancelled)
             {
                 DeleteExtractedFiles(); //如果在直接输出模式下，则删除最终文件。
                 return;
             }
-
-            if (TempOutputPosition != ExtractionTempOutputPosition.Direct)
-            {
-                FileSystem.CopyDirectory(tempOutputDir, OutputDirPath, UIOption.AllDialogs, UICancelOption.DoNothing);
-            }
-
-            DeleteTempDirectory();
         }
 
         private void Extractor_FileExtractionStarted(object sender, FileInfoEventArgs e)
@@ -197,6 +197,7 @@ namespace _7zip.ViewModels
 
             if (ExtractedFilesCount == TotalFilesCount)
             {
+                OnExtractionCompleted();
                 SetPropertyFromUIThreadAsync(nameof(ExtractionStatus), ExtractionStatus.Finished);
                 return;
             }
@@ -212,6 +213,7 @@ namespace _7zip.ViewModels
         private void Extractor_Extracting(object sender, ProgressEventArgs e)
         {
             float percentage = (ExtractedArchivesCount + e.PercentDone / 100f) / TotalArchivesCount;
+            percentage = MathF.Round(percentage, 2);
             SetPropertyFromUIThreadAsync(nameof(ExtractPercentage), percentage);
         }
 
@@ -347,6 +349,7 @@ namespace _7zip.ViewModels
 
         void InnerExtract()
         {
+            ResetExtractionStatus();
             SevenZipExtractor[] extractors = new SevenZipExtractor[ExtractionInfos.Count];
             int totalFilesCount = 0;
             for (int i = 0; i < extractors.Length; i++)
@@ -358,6 +361,7 @@ namespace _7zip.ViewModels
             for (int i = 0; i < extractors.Length; i++)
             {
                 var extractor = extractors[i];
+                SetPropertyFromUIThreadAsync(nameof(CurrentExtractionInfo), ExtractionInfos[i]).Wait();
                 EventStartupFor(extractor);
 
                 SetPropertyFromUIThreadAsync(nameof(TotalFilesCount), totalFilesCount);
@@ -365,7 +369,10 @@ namespace _7zip.ViewModels
 
                 try
                 {
-                    extractor.ExtractFiles(OutputDirPath, ExtractionInfos[i].FileIndexsToExtract);
+                    //如果extractionInfo的FileIndexesToExtract为空，则导出所有文件，否则仅导出这些文件
+                    extractor.ExtractFiles(tempOutputDir,
+                        CurrentExtractionInfo.ShouldExtractAllFiles ? 
+                        GetIndexesForExtraction(extractor) : CurrentExtractionInfo.FileIndexsToExtract);
                 }
                 catch (Exception ex)
                 {
@@ -381,6 +388,25 @@ namespace _7zip.ViewModels
                 if (ExtractionStatus == ExtractionStatus.Cancelled)
                     foreach(var e in extractors[(i+1)..]) e.Dispose(); //在取消时dispose掉剩余的extractor。
             }
+        }
+
+        /// <summary>
+        /// 处理所有压缩文件解压完毕后的操作。
+        /// </summary>
+        void OnExtractionCompleted()
+        {
+            if (TempOutputPosition != ExtractionTempOutputPosition.Direct)
+            {
+                FileSystem.CopyDirectory(tempOutputDir, OutputDirPath, UIOption.AllDialogs, UICancelOption.DoNothing);
+            }
+
+            DeleteTempDirectory();
+        }
+
+        int[] GetIndexesForExtraction(SevenZipExtractor extractor)
+        {
+            if (extractor is null) throw new ArgumentNullException();
+            return extractor.ArchiveFileData.Select(d => d.Index).ToArray();
         }
 
         [RelayCommand]
