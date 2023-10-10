@@ -14,19 +14,19 @@ namespace _7zip.Models
 {
     internal class ShhelExInterface
     {
-        public void ExtractZip(string ZipPath)
-        {
-            //创建ViewModel
-            ExtractionViewModel viewModel = new ExtractionViewModel(ZipPath);
-            viewModel.OutputDirPath = (new FileInfo(ZipPath)).Directory + Path.GetFileNameWithoutExtension(ZipPath);
+        //public void ExtractZip(string ZipPath)
+        //{
+        //    //创建ViewModel
+        //    ExtractionViewModel viewModel = new ExtractionViewModel(ZipPath);
+        //    viewModel.OutputDirPath = (new FileInfo(ZipPath)).Directory + Path.GetFileNameWithoutExtension(ZipPath);
 
-            //设置ViewModel
-            var window = WindowManager.CreateWindow(WindowType.Extraction);
-            (window.Content as FrameworkElement).DataContext = viewModel;
-            window.Activate();
+        //    //设置ViewModel
+        //    var window = WindowManager.CreateWindow(WindowType.Extraction);
+        //    (window.Content as FrameworkElement).DataContext = viewModel;
+        //    window.Activate();
 
-            //开始解压
-            viewModel.ExtractAsync();
-        }
+        //    //开始解压
+        //    viewModel.ExtractAsync();
+        //}
     }
 }

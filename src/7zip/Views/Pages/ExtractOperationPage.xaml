@@ -10,9 +10,7 @@
     d:DataContext="{d:DesignInstance Type=vm:ExtractionViewModel}"
     Background="Transparent"
     mc:Ignorable="d">
-    <Page.Resources>
-        
-    </Page.Resources>
+    <Page.Resources />
     <!--  Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"  -->
 
 
@@ -36,7 +34,7 @@
             <TextBlock
                 MaxWidth="240"
                 Foreground="{ThemeResource SystemBaseMediumColor}"
-                Text="{Binding ArchivePath, Converter={StaticResource PathToFileNameConverter}}" />
+                Text="{Binding CurrentExtractionInfo.ArchivePath, Converter={StaticResource PathToFileNameConverter}}" />
         </StackPanel>
         <StackPanel
             Grid.Row="1"
@@ -48,7 +46,7 @@
                     Spacing="5"
                     Visibility="{Binding IsExtracting}">
                     <TextBlock Text="正在解压" />
-                    <TextBlock Foreground="{ThemeResource SystemBaseMediumHighColor}" Text="{Binding CurrentExtractingFileName}" />
+                    <TextBlock Foreground="{ThemeResource SystemBaseMediumHighColor}" Text="{Binding CurrentExtractingArchiveInfo.FileName}" />
                 </StackPanel>
                 <Grid>
                     <TextBlock Text="解压成功完成。" Visibility="{Binding IsFinished}" />
