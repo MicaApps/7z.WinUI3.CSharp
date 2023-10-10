@@ -6,6 +6,12 @@ This project aims to provide a modern UI partial to 7z
 
 <img src=https://github.com/MicaApps/7z.WinUI3.CSharp/assets/6630660/0f79642a-6864-4ca6-9c3e-9174ff1c2ca8 width=350/>
 
+## Build
+
+Add Nuget source follow the note of this link
+
+https://github.com/CommunityToolkit/Labs-Windows/
+
 ## Design File
 
 https://www.figma.com/file/0cUNzERRnP8b89izPG5g4o/Icon?type=design&node-id=103%3A2&mode=design&t=lMii5PiVKP2SYII2-1
