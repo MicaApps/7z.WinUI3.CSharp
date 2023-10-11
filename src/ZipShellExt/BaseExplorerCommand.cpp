@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "BaseExplorerCommand.h"
 #include "BaseExplorerCommand.g.cpp"
+#include <fstream>
 
 namespace winrt::ZipShellExt::implementation
 {
@@ -233,9 +234,26 @@ namespace winrt::ZipShellExt::implementation
 			}
 		}
 
+
+		//打印所有选中文件的路径，请看看怎么才能支持中文
+		winrt::hstring tempFilePath = Windows::Storage::ApplicationData::Current().LocalCacheFolder().Path();
+		
+		std::string outputFilePath = to_string(tempFilePath) + std::string("\\ExtractPathsTempFile.out");
+		std::wofstream destFile(outputFilePath, std::ios::out);
+
+		for (int i = 0;i < FilePaths.size(); ++i)
+		{
+			destFile << FilePaths[i] << std::endl;
+		}
+		//MessageBox(NULL, tmp, NULL, MB_OK);
+		destFile.close();
+
+
+
 		std::wstring appName = L"7Zip.App.exe";
 		std::wstring commandLineStr = appName + L" -extract " + FilePaths.at(0);
 		//这里目前只选取了第一个文件的路径，后期做叠加窗口
+
 		LPWSTR cmdLine = StrDupW(commandLineStr.c_str());
 
 		STARTUPINFO si;
@@ -243,7 +261,7 @@ namespace winrt::ZipShellExt::implementation
 		ZeroMemory(&si, sizeof(si));
 		ZeroMemory(&pi, sizeof(pi));
 
-		CreateProcessW(NULL,cmdLine, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+		CreateProcessW(NULL, cmdLine, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
 		int lastErr = GetLastError();
 		
 		return S_OK;
