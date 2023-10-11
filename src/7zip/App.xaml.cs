@@ -10,6 +10,8 @@ using Windows.ApplicationModel;
 using _7zip.ViewModels;
 using _7zip.Views.Windows;
 using SevenZip;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace _7zip;
 /// <summary>
@@ -70,15 +72,16 @@ public partial class App : Application
     /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
+
         Host = ConfigureServives();
-        if (CommandLine.Length >=3 && CommandLine[1] == "-extract")
+        if (CommandLine.Length >= 3 && CommandLine[1] == "-extract")
         {
             ExtractTest();
             return;
         }
-        else if (CommandLine.Length >= 3 && CommandLine[1] == "-compress" && CommandLine[2] == "-7z")
+        else if (CommandLine.Length >= 3 && CommandLine[1] == "-compress")
         {
-            Compress7zTest();
+            Compress7z();
             return;
         }
 
@@ -92,11 +95,12 @@ public partial class App : Application
         m_window.Activate();
     }
 
+
     private async void ExtractTest()
     {
         string targetArchivePath = CommandLine[2];
         string outputPath = Path.GetDirectoryName(targetArchivePath);
-        var extractViewModel = new ExtractionViewModel(new ExtractionInfoViewModel[] { new ExtractionInfoViewModel(targetArchivePath,null) });
+        var extractViewModel = new ExtractionViewModel(new ExtractionInfoViewModel[] { new ExtractionInfoViewModel(targetArchivePath, null) });
         extractViewModel.OutputDirPath = outputPath;
         var ui = new OperationWindow();
         (ui.Content as FrameworkElement).DataContext = extractViewModel;
@@ -105,21 +109,18 @@ public partial class App : Application
         Application.Current.Exit();
     }
 
-    private async void Compress7zTest()
+    private async void Compress7z()
     {
-        string targetArchivePath = CommandLine[3];
-        string outputPath = Path.GetDirectoryName(targetArchivePath);
-        var compressionViewModel = GetService<CompressionViewModel>();
-        // compressionViewModel.TargetArchivePath = targetArchivePath;
-        // compressionViewModel. = outputPath;
-        // compressionViewModel.CompressionMethod = CompressionMethod.BZip2;
-
-        //CompressionViewModel暂未完全实现
-        var ui = new OperationWindow();
-        (ui.Content as FrameworkElement).DataContext = compressionViewModel;
-        ui.Activate();
-        await compressionViewModel.CompressAsync();
-        Application.Current.Exit();
+        string extension = "7z";
+        if (CommandLine[2] == "-7z" || CommandLine[2] == "-zip")
+        {
+            extension = CommandLine[2].Replace("-","");
+            List<string> paths = CommandLine.TakeLast(CommandLine.Length-3).ToList();
+            //Viewmodel类需要统一管理
+            var compressionViewModel = GetService<CompressionViewModel>();
+            compressionViewModel.CompressFiles(paths,extension);
+            Application.Current.Exit();
+        }
     }
 
     private IHost ConfigureServives()
