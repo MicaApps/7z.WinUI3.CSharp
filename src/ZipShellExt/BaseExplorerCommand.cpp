@@ -1,5 +1,8 @@
 #include "pch.h"
 #include "BaseExplorerCommand.h"
+
+#include <codecvt>
+
 #include "BaseExplorerCommand.g.cpp"
 #include <fstream>
 
@@ -237,21 +240,27 @@ namespace winrt::ZipShellExt::implementation
 
 		//打印所有选中文件的路径，请看看怎么才能支持中文
 		winrt::hstring tempFilePath = Windows::Storage::ApplicationData::Current().LocalCacheFolder().Path();
-		
 		std::string outputFilePath = to_string(tempFilePath) + std::string("\\ExtractPathsTempFile.out");
-		std::wofstream destFile(outputFilePath, std::ios::out);
+		std::string tmp;
+
+		std::wstring_convert<std::codecvt_utf8<wchar_t>> conv; //创建utf8转换器
+
+		std::ofstream destFile(outputFilePath, std::ios::out);
+
+		destFile << FilePaths.size() << std::endl; //第一行输出文件数量便于读取
 
 		for (int i = 0;i < FilePaths.size(); ++i)
 		{
-			destFile << FilePaths[i] << std::endl;
+			tmp = conv.to_bytes(FilePaths[i]);
+			destFile << tmp << std::endl;
 		}
 		//MessageBox(NULL, tmp, NULL, MB_OK);
 		destFile.close();
 
 
 
-		std::wstring appName = L"7Zip.App.exe";
-		std::wstring commandLineStr = appName + L" -extract " + FilePaths.at(0);
+		std::wstring appName = L"";
+		std::wstring commandLineStr = appName + L"7Zip.App.exe -extract";
 		//这里目前只选取了第一个文件的路径，后期做叠加窗口
 
 		LPWSTR cmdLine = StrDupW(commandLineStr.c_str());
