@@ -1,5 +1,8 @@
 #include "pch.h"
 #include "BaseExplorerCommand.h"
+
+#include <codecvt>
+
 #include "BaseExplorerCommand.g.cpp"
 #include <fstream>
 
@@ -222,9 +225,7 @@ namespace winrt::ZipShellExt::implementation
 					if (SUCCEEDED(selection->GetItemAt(i, Item.put())))
 					{
 						LPWSTR DisplayName = nullptr;
-						if (SUCCEEDED(Item->GetDisplayName(
-							SIGDN_FILESYSPATH,
-							&DisplayName)))
+						if (SUCCEEDED(Item->GetDisplayName(SIGDN_FILESYSPATH, &DisplayName)))
 						{
 							FilePaths.push_back(std::wstring(DisplayName));
 							::CoTaskMemFree(DisplayName);
@@ -235,24 +236,25 @@ namespace winrt::ZipShellExt::implementation
 		}
 
 
-		//打印所有选中文件的路径，请看看怎么才能支持中文
 		winrt::hstring tempFilePath = Windows::Storage::ApplicationData::Current().LocalCacheFolder().Path();
-		
 		std::string outputFilePath = to_string(tempFilePath) + std::string("\\ExtractPathsTempFile.out");
-		std::wofstream destFile(outputFilePath, std::ios::out);
+		std::string tmp;
+
+		std::wstring_convert<std::codecvt_utf8<wchar_t>> conv; //创建utf8转换器
+
+		std::ofstream destFile(outputFilePath, std::ios::out);
+
+		destFile << FilePaths.size() << std::endl; //第一行输出文件数量便于读取
 
 		for (int i = 0;i < FilePaths.size(); ++i)
 		{
-			destFile << FilePaths[i] << std::endl;
+			tmp = conv.to_bytes(FilePaths[i]);
+			destFile << tmp << std::endl;
 		}
 		//MessageBox(NULL, tmp, NULL, MB_OK);
 		destFile.close();
 
-
-
-		std::wstring appName = L"7Zip.App.exe";
-		std::wstring commandLineStr = appName + L" -extract " + FilePaths.at(0);
-		//这里目前只选取了第一个文件的路径，后期做叠加窗口
+		std::wstring commandLineStr = L"7Zip.App.exe -extract";
 
 		LPWSTR cmdLine = StrDupW(commandLineStr.c_str());
 
@@ -311,6 +313,8 @@ namespace winrt::ZipShellExt::implementation
 		constexpr winrt::guid uuid = winrt::guid_of<AddTo7zCommand>();
 		std::vector<std::wstring> FilePaths;
 
+		//获取选择的所有文件的路径
+		//Get paths of all selected files
 		if (selection)
 		{
 			DWORD Count = 0;
@@ -322,9 +326,7 @@ namespace winrt::ZipShellExt::implementation
 					if (SUCCEEDED(selection->GetItemAt(i, Item.put())))
 					{
 						LPWSTR DisplayName = nullptr;
-						if (SUCCEEDED(Item->GetDisplayName(
-							SIGDN_FILESYSPATH,
-							&DisplayName)))
+						if (SUCCEEDED(Item->GetDisplayName(SIGDN_FILESYSPATH, &DisplayName)))
 						{
 							FilePaths.push_back(std::wstring(DisplayName));
 							::CoTaskMemFree(DisplayName);
@@ -334,9 +336,27 @@ namespace winrt::ZipShellExt::implementation
 			}
 		}
 
-		std::wstring appName = L"7Zip.App.exe";
-		std::wstring commandLineStr = appName + L" -compress " + L"-7z "+ FilePaths.at(0);
-		//这里目前只选取了第一个文件的路径，后期做叠加窗口
+
+		winrt::hstring tempFilePath = Windows::Storage::ApplicationData::Current().LocalCacheFolder().Path();
+		std::string outputFilePath = to_string(tempFilePath) + std::string("\\Compress7zPathsTempFile.out");
+		std::string tmp;
+
+		std::wstring_convert<std::codecvt_utf8<wchar_t>> conv; //创建utf8转换器
+
+		std::ofstream destFile(outputFilePath, std::ios::out);
+
+		destFile << FilePaths.size() << std::endl; //第一行输出文件数量便于读取
+
+		for (int i = 0; i < FilePaths.size(); ++i)
+		{
+			tmp = conv.to_bytes(FilePaths[i]);
+			destFile << tmp << std::endl;
+		}
+		//MessageBox(NULL, tmp, NULL, MB_OK);
+		destFile.close();
+
+		std::wstring commandLineStr = L"7Zip.App.exe -compress -7z";
+
 		LPWSTR cmdLine = StrDupW(commandLineStr.c_str());
 
 		STARTUPINFO si;
@@ -393,6 +413,60 @@ namespace winrt::ZipShellExt::implementation
 	IFACEMETHODIMP AddToZipCommand::Invoke(_In_opt_ IShellItemArray* selection, _In_opt_ IBindCtx*)
 	{
 		constexpr winrt::guid uuid = winrt::guid_of<AddToZipCommand>();
+		std::vector<std::wstring> FilePaths;
+
+		if (selection)
+		{
+			DWORD Count = 0;
+			if (SUCCEEDED(selection->GetCount(&Count)))
+			{
+				for (DWORD i = 0; i < Count; ++i)
+				{
+					winrt::com_ptr<IShellItem> Item;
+					if (SUCCEEDED(selection->GetItemAt(i, Item.put())))
+					{
+						LPWSTR DisplayName = nullptr;
+						if (SUCCEEDED(Item->GetDisplayName(SIGDN_FILESYSPATH, &DisplayName)))
+						{
+							FilePaths.push_back(std::wstring(DisplayName));
+							::CoTaskMemFree(DisplayName);
+						}
+					}
+				}
+			}
+		}
+
+
+		winrt::hstring tempFilePath = Windows::Storage::ApplicationData::Current().LocalCacheFolder().Path();
+		std::string outputFilePath = to_string(tempFilePath) + std::string("\\CompressZipPathsTempFile.out");
+		std::string tmp;
+
+		std::wstring_convert<std::codecvt_utf8<wchar_t>> conv; //创建utf8转换器
+
+		std::ofstream destFile(outputFilePath, std::ios::out);
+
+		destFile << FilePaths.size() << std::endl; //第一行输出文件数量便于读取
+
+		for (int i = 0; i < FilePaths.size(); ++i)
+		{
+			tmp = conv.to_bytes(FilePaths[i]);
+			destFile << tmp << std::endl;
+		}
+		//MessageBox(NULL, tmp, NULL, MB_OK);
+		destFile.close();
+
+		std::wstring commandLineStr = L"7Zip.App.exe -compress -zip";
+
+		LPWSTR cmdLine = StrDupW(commandLineStr.c_str());
+
+		STARTUPINFO si;
+		PROCESS_INFORMATION pi;
+		ZeroMemory(&si, sizeof(si));
+		ZeroMemory(&pi, sizeof(pi));
+
+		CreateProcessW(NULL, cmdLine, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+		int lastErr = GetLastError();
+
 		return S_OK;
 	}
 
