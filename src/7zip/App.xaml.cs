@@ -12,6 +12,9 @@ using _7zip.Views.Windows;
 using SevenZip;
 using System.Collections.Generic;
 using System.Linq;
+using WinUIEx;
+using Windows.Storage;
+using System.Reflection;
 
 namespace _7zip;
 /// <summary>
@@ -29,6 +32,8 @@ public partial class App : Application
     public static ILogger Logger { get; private set; }
 
     public IHost Host;
+
+    private Window m_window;
 
     public static T GetService<T>()
         where T : class
@@ -59,7 +64,6 @@ public partial class App : Application
 
         // Configure 7z.dll
         SevenZip.SevenZipBase.SetLibraryPath(Package.Current.InstalledPath + "\\Assets\\7z.dll");
-
         //这里用于测试时输出命令行字符串。
         //string commandLineOutputPath = "D:\\github\\7zipoutput.txt";
         //File.Delete(commandLineOutputPath);
@@ -109,16 +113,15 @@ public partial class App : Application
         Application.Current.Exit();
     }
 
-    private async void Compress7z()
+    private void Compress7z()
     {
         string extension = "7z";
         if (CommandLine[2] == "-7z" || CommandLine[2] == "-zip")
         {
-            extension = CommandLine[2].Replace("-","");
-            List<string> paths = CommandLine.TakeLast(CommandLine.Length-3).ToList();
-            //Viewmodel类需要统一管理
+            extension = CommandLine[2].Replace("-", "");
+            List<string> paths = Helpers.CacheFileHelper.GetStartCommandFilePaths(CommandLine[2]);
             var compressionViewModel = GetService<CompressionViewModel>();
-            compressionViewModel.CompressFiles(paths,extension);
+            compressionViewModel.CompressFiles(paths, extension);
             Application.Current.Exit();
         }
     }
@@ -135,8 +138,6 @@ public partial class App : Application
                 services.AddTransient<ExtractionViewModel>();
             }).Build();
     }
-
-    private Window m_window;
 
     #region Exception Handlers
     private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
