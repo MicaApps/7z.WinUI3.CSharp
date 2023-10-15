@@ -12,12 +12,17 @@ using System.IO;
 using Windows.ApplicationModel.VoiceCommands;
 using _7zip.Views.Windows;
 using Microsoft.UI.Xaml;
+using _7zip.Models;
+using Microsoft.UI.Xaml.Controls;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace _7zip.ViewModels
 {
     internal partial class CompressionViewModel : ObservableObject
     {
         SevenZipCompressor compressor = new();
+
+        OptionModel model = new OptionModel();
 
         [ObservableProperty]
         CompressionMode compressionMode = CompressionMode.Create;
@@ -40,6 +45,7 @@ namespace _7zip.ViewModels
         public CompressionViewModel()
         {
             EventStartup();
+            InitModel();
         }
 
         /// <summary>
@@ -47,7 +53,7 @@ namespace _7zip.ViewModels
         /// </summary>
         /// <param name="sourceFiles"></param>
         /// <param name="method"></param>
-        public void CompressFiles(List<string> sourceFiles,string extension = "7z")
+        public async void CompressFiles(List<string> sourceFiles,string extension = "7z")
         {
             if(sourceFiles!=null&&sourceFiles.Count>0)
             {
@@ -66,10 +72,11 @@ namespace _7zip.ViewModels
 
                 string outputPath = Path.Combine(Path.GetDirectoryName(firstfile), outputName);
                 compressor.ArchiveFormat = OutArchiveFormat.SevenZip;
-    
+                compressor.EventSynchronization = EventSynchronizationStrategy.AlwaysAsynchronous;
                 //Tip:CompressFileAsync not working,alway create empty file
-                compressor.CompressFiles(outputPath, sourceFiles.ToArray());
+                await compressor.CompressFilesAsync(outputPath, sourceFiles.ToArray());
 
+           
                 //Compress Directory
                 compressor.CompressionMode = CompressionMode.Append;
                 compressor.PreserveDirectoryRoot = true;
@@ -78,14 +85,14 @@ namespace _7zip.ViewModels
                     if (Directory.Exists(directorypath))
                     {
                         var directoryName = Path.GetFileNameWithoutExtension(directorypath);
-                        compressor.CompressDirectory(directorypath, outputPath);
+                        await compressor.CompressDirectoryAsync(directorypath, outputPath);
                     }
                 }
             }
         }
 
 
-        void EventStartup()
+        private void EventStartup()
         {
             compressor.FileCompressionStarted += Compressor_FileCompressionStarted;
             compressor.Compressing += Compressor_Compressing;
@@ -96,7 +103,30 @@ namespace _7zip.ViewModels
 
         private void Compressor_FileCompressionStarted(object sender, FileNameEventArgs e)
         {
-            
+            throw new NotImplementedException();
+        }
+
+        private void InitModel()
+        {
+            model.OptionTitle = "压缩";
+            model.OptionProcessingText = "正在压缩";
+            model.SucceedText = "压缩成功";
+            model.PausingText = "正在暂停......";
+            model.PausedText = "压缩已暂停";
+            model.CancelText = "压缩已取消";
+            model.CancelingText = "正在取消......";
+            model.CancelOptionCommand = new RelayCommand(CancelFunction);
+            model.PaussOptionCommand = new RelayCommand(PauseFunction);
+        }
+
+        private void CancelFunction()
+        {
+
+        }
+
+        private void PauseFunction()
+        {
+
         }
 
         /// <summary>

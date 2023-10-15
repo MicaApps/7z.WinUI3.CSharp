@@ -107,7 +107,7 @@ public partial class App : Application
         var extractViewModel = new ExtractionViewModel(new ExtractionInfoViewModel[] { new ExtractionInfoViewModel(targetArchivePath, null) });
         extractViewModel.OutputDirPath = outputPath;
         var ui = new OperationWindow();
-        (ui.Content as FrameworkElement).DataContext = extractViewModel;
+        (ui.Content as FrameworkElement).DataContext = extractViewModel.model;
         ui.Activate();
         await extractViewModel.ExtractAsync();
         Application.Current.Exit();

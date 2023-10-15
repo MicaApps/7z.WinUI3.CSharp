@@ -45,6 +45,9 @@ namespace _7zip.Helpers
                 //Delete First Line String,It's File Path Count
                 sourceFiles.RemoveAt(0);
             }
+
+            //Delete TempPathFile
+            File.Delete(cachFilePath);
             return sourceFiles;
         }
     }
