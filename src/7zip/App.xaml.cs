@@ -78,12 +78,12 @@ public partial class App : Application
     {
 
         Host = ConfigureServives();
-        if (CommandLine.Length >= 3 && CommandLine[1] == "-extract")
+        if (CommandLine.Length >= 2 && CommandLine[1] == "-extract")
         {
             ExtractTest();
             return;
         }
-        else if (CommandLine.Length >= 3 && CommandLine[1] == "-compress")
+        else if (CommandLine.Length >= 2 && CommandLine[1] == "-compress")
         {
             Compress7z();
             return;
@@ -102,9 +102,17 @@ public partial class App : Application
 
     private async void ExtractTest()
     {
-        string targetArchivePath = CommandLine[2];
-        string outputPath = Path.GetDirectoryName(targetArchivePath);
-        var extractViewModel = new ExtractionViewModel(new ExtractionInfoViewModel[] { new ExtractionInfoViewModel(targetArchivePath, null) });
+        List<string> paths = Helpers.CacheFileHelper.GetStartCommandFilePaths("-extract");
+        List<ExtractionInfoViewModel> infos = new List<ExtractionInfoViewModel>();
+        foreach(var file in paths)
+        {
+            if (Path.GetExtension(file) == ".7z" || Path.GetExtension(file) == ".zip"|| Path.GetExtension(file)==".rar")
+            {
+                infos.Add(new ExtractionInfoViewModel(file, null));
+            }
+        }
+        string outputPath = Path.GetDirectoryName(paths.First());
+        var extractViewModel = new ExtractionViewModel(infos);
         extractViewModel.OutputDirPath = outputPath;
         var ui = new OperationWindow();
         (ui.Content as FrameworkElement).DataContext = extractViewModel.model;
