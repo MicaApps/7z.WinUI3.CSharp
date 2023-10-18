@@ -150,10 +150,16 @@ namespace _7zip.ViewModels
             extractor.FileExtractionFinished -= Extractor_FileExtractionFinished;
         }
 
+
+        /// <summary>
+        /// 单个压缩文件解压完成时
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Extractor_ExtractionFinished(object sender, EventArgs e)
         {
-            if (model.ExtractionStatus != OpetionStatus.Cancelled)
-                SetPropertyFromUIThreadAsync(nameof(model.OptionedFileCount), model.OptionedFileCount + 1).Wait();
+            //if (model.ExtractionStatus != OpetionStatus.Cancelled)
+            //    SetPropertyFromUIThreadAsync(nameof(model.OptionedFileCount), model.OptionedFileCount + 1).Wait();
             //如果因取消而结束，应当删除已经导出的文件。
             if (model.ExtractionStatus == OpetionStatus.Cancelled)
             {
@@ -178,7 +184,7 @@ namespace _7zip.ViewModels
         {
             extractedFiles.Add(e.FileInfo);
             SetPropertyFromUIThreadAsync(nameof(model.OptionedFileCount), model.OptionedFileCount + 1).Wait(); //ExtractedFilesCount的新值依赖于旧值，应确保值更新完成再继续。
-
+           // ExtractedArchivesCount++;
             if (model.OptionedFileCount == model.TotalFilesCount)
             {
                 OnExtractionSucceeded();
@@ -196,7 +202,7 @@ namespace _7zip.ViewModels
 
         private void Extractor_Extracting(object sender, ProgressEventArgs e)
         {
-            float percentage = (ExtractedArchivesCount + e.PercentDone / 100f) / TotalArchivesCount;
+            float percentage = (model.OptionedFileCount + e.PercentDone / 100f) / model.TotalFilesCount;
             percentage = MathF.Round(percentage, 2);
             SetPropertyFromUIThreadAsync(nameof(model.OptionPercentage), percentage);
         }
@@ -361,12 +367,12 @@ namespace _7zip.ViewModels
                 extractors[i] = new SevenZipExtractor(ExtractionInfos[i].ArchivePath); //为每个ExtractionInfo初始化解压对象。
                 totalFilesCount += extractors[i].ArchiveFileData.Count;  //获取总文件个数。
             }
+            SetPropertyFromUIThreadAsync(nameof(model.TotalFilesCount), totalFilesCount);
 
             for (int i = 0; i < extractors.Length; i++)
             {
                 var extractor = extractors[i];
-                SetPropertyFromUIThreadAsync(nameof(CurrentExtractionInfo), ExtractionInfos[i],false).Wait();
-                SetPropertyFromUIThreadAsync(nameof(model.TotalFilesCount), totalFilesCount);
+                SetPropertyFromUIThreadAsync(nameof(CurrentExtractionInfo), ExtractionInfos[i], false).Wait();
                 SetPropertyFromUIThreadAsync(nameof(model.ExtractionStatus), OpetionStatus.OptionProcessing);
 
                 EventStartupFor(extractor);

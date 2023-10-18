@@ -29,6 +29,11 @@ public partial class App : Application
     /// </summary>
     public static string[] CommandLine => commandLine ??= Environment.GetCommandLineArgs();
     public static DispatcherQueue MainDispatcherQueue;
+
+    /// <summary>
+    /// Noraml Compressed File Extension
+    /// </summary>
+    public static string[] extension = new string[] {".7z",".zip",".rar",".tar",".gz",".bz2",".xz" };
     public static ILogger Logger { get; private set; }
 
     public IHost Host;
@@ -106,7 +111,7 @@ public partial class App : Application
         List<ExtractionInfoViewModel> infos = new List<ExtractionInfoViewModel>();
         foreach(var file in paths)
         {
-            if (Path.GetExtension(file) == ".7z" || Path.GetExtension(file) == ".zip"|| Path.GetExtension(file)==".rar")
+            if (extension.Contains(Path.GetExtension(file).ToLower()))
             {
                 infos.Add(new ExtractionInfoViewModel(file, null));
             }
