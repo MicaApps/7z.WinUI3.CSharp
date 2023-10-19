@@ -5,11 +5,46 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:_7zip.Views.Pages"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:labs="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
-        <AppBarButton Width="40" Height="40" HorizontalAlignment="Right" VerticalAlignment="Top" Margin=" 20 20" VerticalContentAlignment="Center" Icon="Manage" Click="AppBarButton_Click" />
+    <Grid Margin="10">
+        <StackPanel>
+            <Grid Height="28"/>
+            <CommandBar>
+                <AppBarButton HorizontalAlignment="Right" VerticalAlignment="Top" VerticalContentAlignment="Center" Icon="Manage" Click="AppBarButton_Click" />
+            </CommandBar>
+
+            <TextBlock Text="Settings" Style="{ThemeResource TitleLargeTextBlockStyle}"/>
+
+            <StackPanel Spacing="3" Margin="0 10 0 0">
+                <labs:SettingsExpander x:Name="settingsCard"
+                           Description="Select the theme of the app"
+                           Header="App Theme"
+                           >
+                    <!--  TODO: This should be TwoWay bound but throws compile error in Uno.  -->
+                    <labs:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xE790;" />
+                    </labs:SettingsExpander.HeaderIcon>
+                    
+
+                    <labs:SettingsExpander.Items>
+                        <labs:SettingsCard  ContentAlignment="Left">
+                            <StackPanel >
+                                <RadioButtons HorizontalContentAlignment="Left" >
+                                <RadioButton Content="Light"/>
+                                <RadioButton Content="Dark" />
+                                <RadioButton Content="Follow the system"/>
+                            </RadioButtons>
+                            </StackPanel>
+                            
+                        </labs:SettingsCard>
+                    </labs:SettingsExpander.Items>
+                </labs:SettingsExpander>
+            </StackPanel>
+        </StackPanel>
+        
     </Grid>
 </Page>
