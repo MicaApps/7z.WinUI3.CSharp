@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Controls;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.IO;
+using SevenZip.Compression.LZ;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -65,5 +66,14 @@ public sealed partial class MainPage
         (window.Content as FrameworkElement).DataContext = viewModel.model;
         window.Activate();
         viewModel.ExtractAsync();
+    }
+
+    private void MenuBarItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    {
+        var m_window = MainWindow.Instance;
+
+        Frame rootFrame = MainWindow.Instance.EnsureWindowIsInitialized();
+        rootFrame.Navigate(typeof(Views.Pages.AboutPage), null);
+        m_window.Activate();
     }
 }

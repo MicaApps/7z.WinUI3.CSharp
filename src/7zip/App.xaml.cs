@@ -94,13 +94,11 @@ public partial class App : Application
             return;
         }
 
+        //暂时隐藏主窗体入口
         m_window = MainWindow.Instance;
 
         Frame rootFrame = MainWindow.Instance.EnsureWindowIsInitialized();
-        rootFrame.Navigate(typeof(Views.Pages.MainPage), args);
-
-
-
+        rootFrame.Navigate(typeof(Views.Pages.AboutPage), args);
         m_window.Activate();
     }
 
