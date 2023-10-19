@@ -20,19 +20,29 @@
             <TextBlock Text="Settings" Style="{ThemeResource TitleLargeTextBlockStyle}"/>
 
             <StackPanel Spacing="3" Margin="0 10 0 0">
-                <labs:SettingsCard x:Name="settingsCard"
-                   Description="This is a default card, with the Header, HeaderIcon, Description and Content set."
-                   Header="This is the Header"
-                   >
-                    <labs:SettingsCard.HeaderIcon>
-                        <FontIcon Glyph="&#xE799;" />
-                    </labs:SettingsCard.HeaderIcon>
-                    <ComboBox SelectedIndex="0">
-                        <ComboBoxItem>Option 1</ComboBoxItem>
-                        <ComboBoxItem>Option 2</ComboBoxItem>
-                        <ComboBoxItem>Option 3</ComboBoxItem>
-                    </ComboBox>
-                </labs:SettingsCard>
+                <labs:SettingsExpander x:Name="settingsCard"
+                           Description="Select the theme of the app"
+                           Header="App Theme"
+                           >
+                    <!--  TODO: This should be TwoWay bound but throws compile error in Uno.  -->
+                    <labs:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xE790;" />
+                    </labs:SettingsExpander.HeaderIcon>
+                    
+
+                    <labs:SettingsExpander.Items>
+                        <labs:SettingsCard  ContentAlignment="Left">
+                            <StackPanel >
+                                <RadioButtons HorizontalContentAlignment="Left" >
+                                <RadioButton Content="Light"/>
+                                <RadioButton Content="Dark" />
+                                <RadioButton Content="Follow the system"/>
+                            </RadioButtons>
+                            </StackPanel>
+                            
+                        </labs:SettingsCard>
+                    </labs:SettingsExpander.Items>
+                </labs:SettingsExpander>
             </StackPanel>
         </StackPanel>
         
