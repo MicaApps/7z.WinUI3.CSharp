@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using _7zip.Models;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI;
 using Microsoft.VisualBasic.FileIO;
@@ -9,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,7 +44,7 @@ namespace _7zip.ViewModels
         int extractedFilesCount;
         int extractedArchivesCount;
         ExtractionInfoViewModel currentExtractionInfo;
-        ExtractionStatus extractionStatus;
+        public OptionModel model = new OptionModel();
         #endregion
 
         #region MVVM Properties
@@ -79,24 +81,6 @@ namespace _7zip.ViewModels
         }
 
         /// <summary>
-        /// 获取或设置需要导出的文件总个数。
-        /// </summary>
-        public int TotalFilesCount
-        {
-            get => totalFilesCount;
-            private set => SetProperty(ref totalFilesCount, value);
-        }
-
-        /// <summary>
-        /// 获取已导出的文件个数。
-        /// </summary>
-        public int ExtractedFilesCount
-        {
-            get => extractedFilesCount;
-            private set => SetProperty(ref extractedFilesCount, value); 
-        }
-
-        /// <summary>
         /// 获取已解压完毕的压缩包个数。
         /// </summary>
         public int ExtractedArchivesCount
@@ -114,51 +98,32 @@ namespace _7zip.ViewModels
             private set => SetProperty(ref currentExtractionInfo, value);
         }
 
-        public ExtractionStatus ExtractionStatus
-        {
-            get => extractionStatus;
-            private set => SetProperty(ref extractionStatus, value);
-        }
-
-        public ArchiveFileInfo CurrentExtractingArchiveInfo
-        {
-            get => currentExtractingArchiveInfo;
-            private set => SetProperty(ref currentExtractingArchiveInfo, value);
-        }
+        //public ArchiveFileInfo CurrentExtractingArchiveInfo
+        //{
+        //    get => currentExtractingArchiveInfo;
+        //    private set => SetProperty(ref currentExtractingArchiveInfo, value);
+        //}
 
         public int TotalArchivesCount => ExtractionInfos.Count;
-
-        /// <summary>
-        /// 获取或设置一个值，指示了当前解压操作是否正在暂停。
-        /// </summary>
-        public bool IsPausing => ExtractionStatus == ExtractionStatus.Pausing;
-
-        /// <summary>
-        /// 获取或设置一个值，指示了当前解压操作是否已暂停。
-        /// </summary>
-        public bool IsPaused => ExtractionStatus == ExtractionStatus.Paused;
-
-        /// <summary>
-        /// 获取或设置一个值，指示了正在取消（但还未完成取消）解压操作。
-        /// </summary>
-        public bool IsCancelling => ExtractionStatus == ExtractionStatus.Cancelling;
-
-        /// <summary>
-        /// 获取或设置一个值，指示了解压操作是否被取消。
-        /// </summary>
-        public bool IsCancelled => ExtractionStatus == ExtractionStatus.Cancelled;
-
-        /// <summary>
-        /// 获取或设置一个值，指示了解压操作是否完成。
-        /// </summary>
-        public bool IsFinished => ExtractionStatus == ExtractionStatus.Finished;
-
-        public bool IsExtracting => ExtractionStatus == ExtractionStatus.Extracting;
         #endregion
         public ExtractionViewModel(IEnumerable<ExtractionInfoViewModel> extractionInfos)
         {
             ExtractionInfos = extractionInfos.ToList() ?? throw new ArgumentNullException(nameof(extractionInfos));
-            this.PropertyChanged += ExtractViewModel_PropertyChanged;
+            //this.PropertyChanged += ExtractViewModel_PropertyChanged;
+            InitModel();
+        }
+
+        private void InitModel()
+        {
+            model.OptionTitle = "解压";
+            model.OptionProcessingText = "正在解压";
+            model.SucceedText = "解压成功";
+            model.PausingText = "正在暂停......";
+            model.PausedText = "解压已暂停";
+            model.CancelText = "解压已取消";
+            model.CancelingText = "正在取消......";
+            model.PaussOptionCommand = new RelayCommand(TogglePause);
+            model.CancelOptionCommand = new RelayCommand(CancelWork);
         }
 
         /// <summary>
@@ -185,12 +150,18 @@ namespace _7zip.ViewModels
             extractor.FileExtractionFinished -= Extractor_FileExtractionFinished;
         }
 
+
+        /// <summary>
+        /// 单个压缩文件解压完成时
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Extractor_ExtractionFinished(object sender, EventArgs e)
         {
-            if (ExtractionStatus != ExtractionStatus.Cancelled)
-                SetPropertyFromUIThreadAsync(nameof(ExtractedArchivesCount), ExtractedArchivesCount+ 1).Wait();
+            //if (model.ExtractionStatus != OpetionStatus.Cancelled)
+            //    SetPropertyFromUIThreadAsync(nameof(model.OptionedFileCount), model.OptionedFileCount + 1).Wait();
             //如果因取消而结束，应当删除已经导出的文件。
-            if (ExtractionStatus == ExtractionStatus.Cancelled)
+            if (model.ExtractionStatus == OpetionStatus.Cancelled)
             {
                 DeleteExtractedFiles(); //如果在直接输出模式下，则删除最终文件。
                 return;
@@ -202,27 +173,28 @@ namespace _7zip.ViewModels
             e.Cancel = cancelRequested;
             if (cancelRequested)
             {
-                SetPropertyFromUIThreadAsync(nameof(ExtractionStatus), ExtractionStatus.Cancelled);
+                SetPropertyFromUIThreadAsync(nameof(model.ExtractionStatus), OpetionStatus.Cancelled);
             }
 
-            SetPropertyFromUIThreadAsync(nameof(CurrentExtractingArchiveInfo), e.FileInfo);
+            //SetPropertyFromUIThreadAsync(nameof(CurrentExtractingArchiveInfo), e.FileInfo);
+            SetPropertyFromUIThreadAsync(nameof(model.OptionFileName),e.FileInfo.FileName);
         }
 
         private void Extractor_FileExtractionFinished(object sender, FileInfoEventArgs e)
         {
             extractedFiles.Add(e.FileInfo);
-            SetPropertyFromUIThreadAsync(nameof(ExtractedFilesCount), ExtractedFilesCount + 1).Wait(); //ExtractedFilesCount的新值依赖于旧值，应确保值更新完成再继续。
-
-            if (ExtractedFilesCount == TotalFilesCount)
+            SetPropertyFromUIThreadAsync(nameof(model.OptionedFileCount), model.OptionedFileCount + 1).Wait(); //ExtractedFilesCount的新值依赖于旧值，应确保值更新完成再继续。
+           // ExtractedArchivesCount++;
+            if (model.OptionedFileCount == model.TotalFilesCount)
             {
                 OnExtractionSucceeded();
-                SetPropertyFromUIThreadAsync(nameof(ExtractionStatus), ExtractionStatus.Finished);
+                SetPropertyFromUIThreadAsync(nameof(model.ExtractionStatus), OpetionStatus.Finished);
                 return;
             }
 
             if (pauseRequested)
             {
-                SetPropertyFromUIThreadAsync(nameof(ExtractionStatus), ExtractionStatus.Paused);
+                SetPropertyFromUIThreadAsync(nameof(model.ExtractionStatus), OpetionStatus.Paused);
                 pauseWorkSemaphore.Wait();
                 pauseWorkSemaphore.Release();
             }
@@ -230,25 +202,25 @@ namespace _7zip.ViewModels
 
         private void Extractor_Extracting(object sender, ProgressEventArgs e)
         {
-            float percentage = (ExtractedArchivesCount + e.PercentDone / 100f) / TotalArchivesCount;
+            float percentage = (model.OptionedFileCount + e.PercentDone / 100f) / model.TotalFilesCount;
             percentage = MathF.Round(percentage, 2);
-            SetPropertyFromUIThreadAsync(nameof(ExtractPercentage), percentage);
+            SetPropertyFromUIThreadAsync(nameof(model.OptionPercentage), percentage);
         }
 
-        private void ExtractViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            switch(e.PropertyName)
-            {
-                case nameof(ExtractionStatus):
-                    OnPropertyChanged(nameof(IsPausing));
-                    OnPropertyChanged(nameof(IsPaused));
-                    OnPropertyChanged(nameof(IsCancelling));
-                    OnPropertyChanged(nameof(IsCancelled));
-                    OnPropertyChanged(nameof(IsExtracting));
-                    OnPropertyChanged(nameof(IsFinished));
-                    break;
-            }
-        }
+        //private void ExtractViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        //{
+        //    switch(e.PropertyName)
+        //    {
+        //        case nameof(model.ExtractionStatus):
+        //            OnPropertyChanged(nameof(model.IsPausing));
+        //            OnPropertyChanged(nameof(model.IsPaused));
+        //            OnPropertyChanged(nameof(model.IsCancelling));
+        //            OnPropertyChanged(nameof(model.IsCancelled));
+        //            OnPropertyChanged(nameof(model.IsProcessing));
+        //            OnPropertyChanged(nameof(model.IsFinished));
+        //            break;
+        //    }
+        //}
 
         /// <summary>
         /// 重置解压操作的所有统计数据和信息，以便执行新的解压操作。
@@ -268,8 +240,8 @@ namespace _7zip.ViewModels
 
             ExtractedArchivesCount = 0;
             ExtractPercentage = 0;
-            ExtractedFilesCount = 0;
-            TotalFilesCount = -1;
+            model.OptionedFileCount = 0;
+            model.TotalFilesCount = -1;
         }
 
         /// <summary>
@@ -278,11 +250,20 @@ namespace _7zip.ViewModels
         /// <param name="propertyName">属性名称，强烈建议使用nameof</param>
         /// <param name="newValue">要赋予的值</param>
         /// <param name="generateWaitTask">是否要生成该操作的Task，以便进行等待。</param>
-        Task SetPropertyFromUIThreadAsync(string propertyName, object newValue)
+        Task SetPropertyFromUIThreadAsync(string propertyName, object newValue, bool Updatemodel = true)
         {
-            thisType ??= this.GetType();
-            var propertyInfo = thisType.GetProperty(propertyName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-            var task = App.MainDispatcherQueue.EnqueueAsync(() => propertyInfo.SetValue(this, newValue));
+            PropertyInfo propertyInfo;
+            Task task;
+            if (Updatemodel)
+            {
+                propertyInfo = model.GetType().GetProperty(propertyName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                task = App.MainDispatcherQueue.EnqueueAsync(() => propertyInfo?.SetValue(model, newValue));
+            }
+            else
+            {
+                propertyInfo = this.GetType().GetProperty(propertyName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                task = App.MainDispatcherQueue.EnqueueAsync(() => propertyInfo?.SetValue(this, newValue));
+            }
             return task;
         }
 
@@ -294,7 +275,7 @@ namespace _7zip.ViewModels
         public void CancelWork()
         {
             cancelRequested = true;
-            ExtractionStatus = ExtractionStatus.Cancelling;
+            model.ExtractionStatus = OpetionStatus.Cancelling;
             ResumeWork(); //取消解压时，需要使暂停的解压操作继续，来取消线程(信号量)堵塞，以执行取消操作。
         }
 
@@ -303,7 +284,7 @@ namespace _7zip.ViewModels
         {
             if (!pauseRequested)
             {
-                ExtractionStatus = ExtractionStatus.Pausing;
+                model.ExtractionStatus = OpetionStatus.Pausing;
                 pauseWorkSemaphore.Wait();
                 pauseRequested = true;
             }
@@ -317,7 +298,7 @@ namespace _7zip.ViewModels
                 pauseWorkSemaphore.Release();
                 pauseRequested = false;
                 if (!cancelRequested)
-                    ExtractionStatus = ExtractionStatus.Extracting;
+                    model.ExtractionStatus = OpetionStatus.OptionProcessing;
             }
         }
 
@@ -386,13 +367,13 @@ namespace _7zip.ViewModels
                 extractors[i] = new SevenZipExtractor(ExtractionInfos[i].ArchivePath); //为每个ExtractionInfo初始化解压对象。
                 totalFilesCount += extractors[i].ArchiveFileData.Count;  //获取总文件个数。
             }
+            SetPropertyFromUIThreadAsync(nameof(model.TotalFilesCount), totalFilesCount);
 
             for (int i = 0; i < extractors.Length; i++)
             {
                 var extractor = extractors[i];
-                SetPropertyFromUIThreadAsync(nameof(CurrentExtractionInfo), ExtractionInfos[i]).Wait();
-                SetPropertyFromUIThreadAsync(nameof(TotalFilesCount), totalFilesCount);
-                SetPropertyFromUIThreadAsync(nameof(ExtractionStatus), ExtractionStatus.Extracting);
+                SetPropertyFromUIThreadAsync(nameof(CurrentExtractionInfo), ExtractionInfos[i], false).Wait();
+                SetPropertyFromUIThreadAsync(nameof(model.ExtractionStatus), OpetionStatus.OptionProcessing);
 
                 EventStartupFor(extractor);
                 try
@@ -413,7 +394,7 @@ namespace _7zip.ViewModels
                     extractor = null;
                 }
 
-                if (ExtractionStatus == ExtractionStatus.Cancelled)
+                if (model.ExtractionStatus == OpetionStatus.Cancelled)
                 {
                     foreach (var e in extractors[(i + 1)..]) { e.Dispose(); } //在取消时dispose掉剩余的extractor。
                     break;
@@ -490,10 +471,10 @@ namespace _7zip.ViewModels
     /// <summary>
     /// 表示当前导出过程的状态。
     /// </summary>
-    public enum ExtractionStatus
+    public enum OpetionStatus
     {
         None = 0,
-        Extracting,
+        OptionProcessing,
         Finished,
         Pausing,
         Paused,

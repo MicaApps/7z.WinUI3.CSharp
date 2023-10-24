@@ -66,9 +66,11 @@
     <None Remove="Assets\Wide310x150Logo.scale-400.png" />
     <None Remove="Styles\Themes.Dark.xaml" />
     <None Remove="Styles\Themes.Light.xaml" />
+    <None Remove="Views\Pages\AboutPage.xaml" />
     <None Remove="Views\Pages\ExtractOperationPage.xaml" />
     <None Remove="Views\Pages\MainPage.xaml" />
     <None Remove="Views\Pages\SplashScreenPage.xaml" />
+    <None Remove="Views\Windows\AboutDialog.xaml" />
     <None Remove="Views\Windows\NewCompressionWindow.xaml" />
     <None Remove="Views\Windows\OperationWindow.xaml" />
 	  
@@ -77,6 +79,12 @@
 	<Compile Remove="**/ZipShellExt/**" />
 	<EmbeddedResource Remove="**/ZipShellExt/**" />
 	<None Remove="**/ZipShellExt/**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Views\Windows\AboutDialog.xaml.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Remove="Views\Windows\AboutDialog.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -104,6 +112,11 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\7Zip.Core\7Zip.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Pages\AboutPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Styles\Themes.Dark.xaml">

@@ -60,6 +60,8 @@
             <MenuBarItem Title="帮助">
                 <MenuFlyoutItem Text="关于7Zip" />
             </MenuBarItem>
+            <MenuBarItem Title="设置" Tapped="MenuBarItem_Tapped"/>
+
         </MenuBar>
         <CommandBar
             Grid.Row="2"

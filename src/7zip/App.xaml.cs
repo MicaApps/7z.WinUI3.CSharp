@@ -10,6 +10,11 @@ using Windows.ApplicationModel;
 using _7zip.ViewModels;
 using _7zip.Views.Windows;
 using SevenZip;
+using System.Collections.Generic;
+using System.Linq;
+using WinUIEx;
+using Windows.Storage;
+using System.Reflection;
 
 namespace _7zip;
 /// <summary>
@@ -24,9 +29,16 @@ public partial class App : Application
     /// </summary>
     public static string[] CommandLine => commandLine ??= Environment.GetCommandLineArgs();
     public static DispatcherQueue MainDispatcherQueue;
+
+    /// <summary>
+    /// Noraml Compressed File Extension
+    /// </summary>
+    public static string[] extension = new string[] {".7z",".zip",".rar",".tar",".gz",".bz2",".xz" };
     public static ILogger Logger { get; private set; }
 
     public IHost Host;
+
+    private Window m_window;
 
     public static T GetService<T>()
         where T : class
@@ -57,7 +69,6 @@ public partial class App : Application
 
         // Configure 7z.dll
         SevenZip.SevenZipBase.SetLibraryPath(Package.Current.InstalledPath + "\\Assets\\7z.dll");
-
         //这里用于测试时输出命令行字符串。
         //string commandLineOutputPath = "D:\\github\\7zipoutput.txt";
         //File.Delete(commandLineOutputPath);
@@ -70,56 +81,60 @@ public partial class App : Application
     /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
+
         Host = ConfigureServives();
-        if (CommandLine.Length >=3 && CommandLine[1] == "-extract")
+        if (CommandLine.Length >= 2 && CommandLine[1] == "-extract")
         {
             ExtractTest();
             return;
         }
-        else if (CommandLine.Length >= 3 && CommandLine[1] == "-compress" && CommandLine[2] == "-7z")
+        else if (CommandLine.Length >= 2 && CommandLine[1] == "-compress")
         {
-            Compress7zTest();
+            Compress7z();
             return;
         }
 
+        //暂时隐藏主窗体入口
         m_window = MainWindow.Instance;
 
         Frame rootFrame = MainWindow.Instance.EnsureWindowIsInitialized();
-        rootFrame.Navigate(typeof(Views.Pages.MainPage), args);
-
-
-
+        rootFrame.Navigate(typeof(Views.Pages.AboutPage), args);
         m_window.Activate();
     }
 
+
     private async void ExtractTest()
     {
-        string targetArchivePath = CommandLine[2];
-        string outputPath = Path.GetDirectoryName(targetArchivePath);
-        var extractViewModel = new ExtractionViewModel(new ExtractionInfoViewModel[] { new ExtractionInfoViewModel(targetArchivePath,null) });
+        List<string> paths = Helpers.CacheFileHelper.GetStartCommandFilePaths("-extract");
+        List<ExtractionInfoViewModel> infos = new List<ExtractionInfoViewModel>();
+        foreach(var file in paths)
+        {
+            if (extension.Contains(Path.GetExtension(file).ToLower()))
+            {
+                infos.Add(new ExtractionInfoViewModel(file, null));
+            }
+        }
+        string outputPath = Path.GetDirectoryName(paths.First());
+        var extractViewModel = new ExtractionViewModel(infos);
         extractViewModel.OutputDirPath = outputPath;
         var ui = new OperationWindow();
-        (ui.Content as FrameworkElement).DataContext = extractViewModel;
+        (ui.Content as FrameworkElement).DataContext = extractViewModel.model;
         ui.Activate();
         await extractViewModel.ExtractAsync();
         Application.Current.Exit();
     }
 
-    private async void Compress7zTest()
+    private void Compress7z()
     {
-        string targetArchivePath = CommandLine[3];
-        string outputPath = Path.GetDirectoryName(targetArchivePath);
-        var compressionViewModel = GetService<CompressionViewModel>();
-        // compressionViewModel.TargetArchivePath = targetArchivePath;
-        // compressionViewModel. = outputPath;
-        // compressionViewModel.CompressionMethod = CompressionMethod.BZip2;
-
-        //CompressionViewModel暂未完全实现
-        var ui = new OperationWindow();
-        (ui.Content as FrameworkElement).DataContext = compressionViewModel;
-        ui.Activate();
-        await compressionViewModel.CompressAsync();
-        Application.Current.Exit();
+        string extension = "7z";
+        if (CommandLine[2] == "-7z" || CommandLine[2] == "-zip")
+        {
+            extension = CommandLine[2].Replace("-", "");
+            List<string> paths = Helpers.CacheFileHelper.GetStartCommandFilePaths(CommandLine[2]);
+            var compressionViewModel = GetService<CompressionViewModel>();
+            compressionViewModel.CompressFiles(paths, extension);
+            Application.Current.Exit();
+        }
     }
 
     private IHost ConfigureServives()
@@ -134,8 +149,6 @@ public partial class App : Application
                 services.AddTransient<ExtractionViewModel>();
             }).Build();
     }
-
-    private Window m_window;
 
     #region Exception Handlers
     private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
