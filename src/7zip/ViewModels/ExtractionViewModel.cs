@@ -1,4 +1,5 @@
-﻿using _7zip.Models;
+﻿using _7zip.Helpers;
+using _7zip.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI;
@@ -31,12 +32,14 @@ namespace _7zip.ViewModels
         bool pauseRequested = false;
         bool cancelRequested = false;
         string tempOutputDir; //中转目录的路径。
-        SemaphoreSlim pauseWorkSemaphore = new(1, 1);
-        List<ArchiveFileInfo> extractedFiles = new(10); //已经导出的压缩文件内部文件信息。
+        string finalTempOutputDir; //经过创建输出目录等操作后，最终解压到的临时路径。
+        SemaphoreSlim pauseWorkSemaphore = new(1, 1); //用于暂停解压操作的信号量。
+        List<ArchiveFileInfo> extractedFiles = new(); //已经导出的压缩文件内部文件信息。
         #endregion
 
         #region MVVM Observable Back-Fields
         ExtractionTempOutputPosition tempOutputPosition;
+        ExtractionDirCreateOption dirCreateOption;
         string outputDirPath;
         float extractPercentage;
         ArchiveFileInfo currentExtractingArchiveInfo;
@@ -60,6 +63,15 @@ namespace _7zip.ViewModels
         {
             get => tempOutputPosition;
             set { if (!isWorking) SetProperty(ref tempOutputPosition, value); }
+        }
+
+        /// <summary>
+        /// 获取或设置解压时新建解压目录的选项。
+        /// </summary>
+        public ExtractionDirCreateOption ExtractionDirCreateOption
+        {
+            get => dirCreateOption;
+            set { if (!isWorking) SetProperty(ref dirCreateOption, value); }
         }
 
         /// <summary>
@@ -177,14 +189,14 @@ namespace _7zip.ViewModels
             }
 
             //SetPropertyFromUIThreadAsync(nameof(CurrentExtractingArchiveInfo), e.FileInfo);
-            SetPropertyFromUIThreadAsync(nameof(model.OptionFileName),e.FileInfo.FileName);
+            SetPropertyFromUIThreadAsync(nameof(model.OptionFileName), e.FileInfo.FileName);
         }
 
         private void Extractor_FileExtractionFinished(object sender, FileInfoEventArgs e)
         {
             extractedFiles.Add(e.FileInfo);
             SetPropertyFromUIThreadAsync(nameof(model.OptionedFileCount), model.OptionedFileCount + 1).Wait(); //ExtractedFilesCount的新值依赖于旧值，应确保值更新完成再继续。
-           // ExtractedArchivesCount++;
+                                                                                                               // ExtractedArchivesCount++;
             if (model.OptionedFileCount == model.TotalFilesCount)
             {
                 OnExtractionSucceeded();
@@ -234,7 +246,7 @@ namespace _7zip.ViewModels
             {
                 ExtractionTempOutputPosition.Direct => OutputDirPath,
                 ExtractionTempOutputPosition.AppLocalCache => ApplicationData.Current.LocalCacheFolder.Path,
-                _ => Path.Combine(Path.GetTempPath(), "MicaApp.7zip", Path.GetRandomFileName()) //如果未指定，也使用用户缓存目录。
+                _ => Path.Combine(Path.GetTempPath(), "MicaApp.7zip", Path.GetRandomFileName())
             };
             Debug.WriteLine($"[{nameof(ResetExtractionStatus)}] using \"{tempOutputDir}\" as temp directory.");
 
@@ -357,6 +369,29 @@ namespace _7zip.ViewModels
             }
         }
 
+        /// <summary>
+        /// 为指定压缩文件创建外层文件夹（如果<see cref="ExtractionDirCreateOption"/> 为 <see cref="ExtractionDirCreateOption.Disable"/>，则不生效）。
+        /// </summary>
+        /// <param name="extractor"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        void InitializeOutputDirectoryFor(SevenZipExtractor extractor)
+        {
+            if (ExtractionDirCreateOption == ExtractionDirCreateOption.CreateIfNotSingleDir && extractor is null)
+                throw new ArgumentNullException($"[{nameof(InitializeOutputDirectoryFor)}]: {nameof(ExtractionDirCreateOption.CreateIfNotSingleDir)} requires an SevenzipExtractor object to determine whether to create dir.");
+            bool createDir = false;
+            switch (dirCreateOption)
+            {
+                case ExtractionDirCreateOption.Disable: createDir = false; break;
+                case ExtractionDirCreateOption.CreateIfNotSingleDir: createDir = !ArchiveHelper.IsInSingleDirStructure(extractor); break;
+                default: createDir = true; break;
+            }
+
+            if (!createDir) return;
+            string dirPathToCreate = tempOutputDir + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(extractor.FileName);
+            Directory.CreateDirectory(dirPathToCreate);
+            finalTempOutputDir = dirPathToCreate;
+        }
+
         void InnerExtract()
         {
             ResetExtractionStatus();
@@ -372,16 +407,18 @@ namespace _7zip.ViewModels
             for (int i = 0; i < extractors.Length; i++)
             {
                 var extractor = extractors[i];
+
                 SetPropertyFromUIThreadAsync(nameof(CurrentExtractionInfo), ExtractionInfos[i], false).Wait();
                 SetPropertyFromUIThreadAsync(nameof(model.ExtractionStatus), OpetionStatus.OptionProcessing);
 
+                InitializeOutputDirectoryFor(extractor);
                 EventStartupFor(extractor);
                 try
                 {
                     //如果extractionInfo的FileIndexesToExtract为空，则导出所有文件，否则仅导出这些文件
-                    extractor.ExtractFiles(tempOutputDir,
+                    extractor.ExtractFiles(finalTempOutputDir,
                         CurrentExtractionInfo.ShouldExtractAllFiles ?
-                        GetIndexesForExtraction(extractor) : CurrentExtractionInfo.FileIndexsToExtract);
+                        ArchiveHelper.GetIndexesForAllFiles(extractor) : CurrentExtractionInfo.FileIndexsToExtract);
                 }
                 catch (Exception ex)
                 {
@@ -422,11 +459,7 @@ namespace _7zip.ViewModels
             DeleteTempDirectory();
         }
 
-        int[] GetIndexesForExtraction(SevenZipExtractor extractor)
-        {
-            if (extractor is null) throw new ArgumentNullException();
-            return extractor.ArchiveFileData.Select(d => d.Index).ToArray();
-        }
+
 
         /// <summary>
         /// 检查参数是否有效。
@@ -435,14 +468,14 @@ namespace _7zip.ViewModels
         bool CheckParameters()
         {
             return ExtractionInfos.Any()
-                && InitializeOutputDirectory();
+                && InitializeBaseOutputDirectory();
         }
 
         /// <summary>
-        /// 初始化输出目录。
+        /// 初始化基础输出目录。
         /// </summary>
         /// <returns>成功返回true，否则返回false。</returns>
-        bool InitializeOutputDirectory()
+        bool InitializeBaseOutputDirectory()
         {
             bool success = true;
             try
@@ -451,7 +484,7 @@ namespace _7zip.ViewModels
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[{nameof(InitializeOutputDirectory)}]:{ex.Message}");
+                Debug.WriteLine($"[{nameof(InitializeBaseOutputDirectory)}]:{ex.Message}");
                 success = false;
             }
             return success;
@@ -483,6 +516,29 @@ namespace _7zip.ViewModels
     }
 
     /// <summary>
+    /// 表示解压时新建解压目录的选项。
+    /// </summary>
+    public enum ExtractionDirCreateOption
+    {
+        /// <summary>
+        /// 等同于AlwaysCreate
+        /// </summary>
+        Default = 0,
+        /// <summary>
+        /// 始终不创建目录。
+        /// </summary>
+        Disable,
+        /// <summary>
+        /// 如果压缩包最外层不是单个文件夹，则创建目录。
+        /// </summary>
+        CreateIfNotSingleDir,
+        /// <summary>
+        /// 总是创建解压目录。
+        /// </summary>
+        AlwaysCreate = Default,
+    }
+
+    /// <summary>
     /// 表示导出时使用的临时文件中转目录。
     /// </summary>
     public enum ExtractionTempOutputPosition
@@ -492,13 +548,13 @@ namespace _7zip.ViewModels
         /// </summary>
         Default = 0,
         /// <summary>
+        /// 使用用户缓存目录。
+        /// </summary>
+        TempFolder = Default,
+        /// <summary>
         /// 不使用中转目录。
         /// </summary>
         Direct,
-        /// <summary>
-        /// 使用用户缓存目录。
-        /// </summary>
-        TempFolder,
         /// <summary>
         /// 使用应用本地缓存目录。
         /// </summary>
