@@ -63,7 +63,7 @@ public sealed partial class MainPage
         ExtractionViewModel viewModel = new ExtractionViewModel(extractionInfos.Where(e => File.Exists(e.ArchivePath)));
         viewModel.OutputDirPath = outputDirTextBox.Text;
         var window = new OperationWindow();
-        (window.Content as FrameworkElement).DataContext = viewModel.model;
+        (window.Content as FrameworkElement).DataContext = viewModel;
         window.Activate();
         viewModel.ExtractAsync();
     }

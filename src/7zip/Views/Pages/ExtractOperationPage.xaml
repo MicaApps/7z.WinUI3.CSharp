@@ -5,10 +5,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:_7zip.Views.Pages"
+    xmlns:m="[m ]using:_7zip.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:_7zip.ViewModels"
-    xmlns:m ="using:_7zip.Models"
-    d:DataContext="{d:DesignInstance Type=m:OptionModel}"
+    d:DataContext="{d:DesignInstance Type=vm:ProgressViewModelBase}"
     Background="Transparent"
     mc:Ignorable="d">
     <Grid MinHeight="200">
@@ -26,7 +26,7 @@
                 Height="16"
                 Margin="8,0"
                 Source="/Assets/AppIcon.ico" />
-            <TextBlock x:Name="titleTxtBlock" Text="{Binding OptionTitle}" />
+            <TextBlock x:Name="titleTxtBlock" Text="{Binding Title}" />
             <!--<TextBlock Foreground="{ThemeResource SystemBaseMediumColor}" Text="-" />
             <TextBlock
                 MaxWidth="240"
@@ -39,20 +39,24 @@
             Orientation="Vertical">
             <Grid>
                 <StackPanel
-                    Margin="0 10 0 0"
+                    Margin="0,10,0,0"
                     Orientation="Horizontal"
-                    Spacing="5"
-                    Visibility="{Binding IsProcessing}">
-                    <TextBlock Text="{Binding OptionProcessingText}" />
-                    <TextBlock MaxWidth="280" TextTrimming="CharacterEllipsis" Foreground="{ThemeResource SystemBaseMediumHighColor}" Text="{Binding OptionFileName}" />
+                    Spacing="5">
+                    <TextBlock Text="{Binding PrimaryText}" />
+                    <TextBlock
+                        MaxWidth="280"
+                        Foreground="{ThemeResource SystemBaseMediumHighColor}"
+                        Text="{Binding SecondaryText}"
+                        TextTrimming="CharacterEllipsis"
+                        Visibility="{Binding IsProcessing}" />
                 </StackPanel>
-                <Grid Margin="0 10 0 0">
+                <!--<Grid Margin="0,10,0,0">
                     <TextBlock Text="{Binding SucceedText}" Visibility="{Binding IsFinished}" />
                     <TextBlock Text="{Binding CancelText}" Visibility="{Binding IsCancelled}" />
                     <TextBlock Text="{Binding CancelText}" Visibility="{Binding IsCancelling}" />
                     <TextBlock Text="{Binding PausedText}" Visibility="{Binding IsPaused}" />
                     <TextBlock Text="{Binding PausingText}" Visibility="{Binding IsPausing}" />
-                </Grid>
+                </Grid>-->
 
                 <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                     <StackPanel.Resources>
@@ -63,13 +67,13 @@
                         </Style>
                     </StackPanel.Resources>
                     <AppBarButton
-                        Command="{Binding PaussOptionCommand}"
+                        Command="{Binding TogglePauseCommand}"
                         Icon="{Binding IsPaused, Converter={StaticResource IsPausedSymbolIconConverter}}"
-                        IsEnabled="{Binding ExtractionStatus, Converter={StaticResource IsStringContainedByConverter}, ConverterParameter=None|OptionProcessing|Paused}" />
+                        IsEnabled="{Binding ProgressStatus, Converter={StaticResource IsStringContainedByConverter}, ConverterParameter=None|Processing|Paused}" />
                     <AppBarButton
-                        Command="{Binding CancelOptionCommand}"
+                        Command="{Binding CancelCommand}"
                         Icon="Cancel"
-                        IsEnabled="{Binding ExtractionStatus, Converter={StaticResource IsStringContainedByConverter}, ConverterParameter=None|OptionProcessing|Paused|Pausing}" />
+                        IsEnabled="{Binding ProgressStatus, Converter={StaticResource IsStringContainedByConverter}, ConverterParameter=None|Processing|Paused|Pausing}" />
                 </StackPanel>
             </Grid>
 
@@ -79,21 +83,21 @@
                 Maximum="1"
                 ShowError="False"
                 ShowPaused="False"
-                Value="{Binding OptionPercentage}" />
+                Value="{Binding ProgressPercentage}" />
 
             <Grid Margin="0,3,0,0" HorizontalAlignment="Stretch">
                 <StackPanel
                     HorizontalAlignment="Left"
                     Orientation="Horizontal"
                     Spacing="1">
-                    <TextBlock Foreground="{ThemeResource SystemBaseMediumColor}" Text="文件" />
-                    <TextBlock Margin="5,0,0,0" Text="{Binding OptionedFileCount}" />
+                    <TextBlock Foreground="{ThemeResource SystemBaseMediumColor}" Text="{Binding ProgressPrefixText}" />
+                    <TextBlock Margin="5,0,0,0" Text="{Binding CurrentProgressValue}" />
                     <TextBlock Text="/" />
-                    <TextBlock Text="{Binding TotalFilesCount}" />
+                    <TextBlock Text="{Binding MaxProgressValue}" />
 
                 </StackPanel>
                 <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                    <TextBlock Text="{Binding OptionPercentage, Converter={StaticResource BasicCalculateConverter}, ConverterParameter=*100}" />
+                    <TextBlock Text="{Binding ProgressPercentage, Converter={StaticResource BasicCalculateConverter}, ConverterParameter=*100}" />
                     <TextBlock Text="%" />
                 </StackPanel>
             </Grid>
