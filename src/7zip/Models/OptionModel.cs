@@ -11,122 +11,122 @@ using System.Threading.Tasks;
 
 namespace _7zip.Models
 {
-    /// <summary>
-    /// Model for Extract and Compress Option
-    /// </summary>
-    public partial class OptionModel: ObservableObject
-    {
-        [ObservableProperty]
-        private string optionTitle;
+    ///// <summary>
+    ///// Model for Extract and Compress Option
+    ///// </summary>
+    //internal partial class OptionModel : ProgressViewModelBase
+    //{
+    //    [ObservableProperty]
+    //    private string optionTitle;
 
 
-        [ObservableProperty]
-        private string optionProcessingText;
+    //    [ObservableProperty]
+    //    private string optionProcessingText;
 
-        [ObservableProperty]
-        private string succeedText;
+    //    [ObservableProperty]
+    //    private string succeedText;
 
-        [ObservableProperty]
-        private string cancelText;
+    //    [ObservableProperty]
+    //    private string cancelText;
 
-        [ObservableProperty]
-        private string cancelingText;
+    //    [ObservableProperty]
+    //    private string cancelingText;
 
-        [ObservableProperty]
-        private string pausedText;
+    //    [ObservableProperty]
+    //    private string pausedText;
 
-        [ObservableProperty]
-        private string pausingText;
+    //    [ObservableProperty]
+    //    private string pausingText;
 
-        [ObservableProperty]
-        private int totalFilesCount;
+    //    [ObservableProperty]
+    //    private int totalFilesCount;
 
-        [ObservableProperty]
-        private int optionedFileCount;
+    //    [ObservableProperty]
+    //    private int optionedFileCount;
 
-        [ObservableProperty]
-        private float optionPercentage;
+    //    [ObservableProperty]
+    //    private float optionPercentage;
 
-        private string optionFileName;
+    //    private string optionFileName;
 
-        public string OptionFileName
-        {
-            get => optionFileName;
-            set => SetProperty(ref optionFileName, value);
-        }
+    //    public string OptionFileName
+    //    {
+    //        get => optionFileName;
+    //        set => SetProperty(ref optionFileName, value);
+    //    }
 
-        private OpetionStatus extractionStatus = OpetionStatus.Pausing;
-
-
-        public OpetionStatus ExtractionStatus
-        {
-            get => extractionStatus;
-            set => SetProperty(ref extractionStatus, value);
-        }
-
-        /// <summary>
-        /// 获取或设置一个值，指示了当前解压操作是否正在暂停。
-        /// </summary>
-        public bool IsPausing => ExtractionStatus == OpetionStatus.Pausing;
+    //    private OpetionStatus extractionStatus = OpetionStatus.Pausing;
 
 
-        /// <summary>
-        /// 获取或设置一个值，指示了当前解压操作是否已暂停。
-        /// </summary>
-        public bool IsPaused => ExtractionStatus == OpetionStatus.Paused;
+    //    public OpetionStatus ExtractionStatus
+    //    {
+    //        get => extractionStatus;
+    //        set => SetProperty(ref extractionStatus, value);
+    //    }
 
-        /// <summary>
-        /// 获取或设置一个值，指示了正在取消（但还未完成取消）解压操作。
-        /// </summary>
-        public bool IsCancelling => ExtractionStatus == OpetionStatus.Cancelling;
-
-        /// <summary>
-        /// 获取或设置一个值，指示了解压操作是否被取消。
-        /// </summary>
-        public bool IsCancelled => ExtractionStatus == OpetionStatus.Cancelled;
-
-        /// <summary>
-        /// 获取或设置一个值，指示了解压操作是否完成。
-        /// </summary>
-        public bool IsFinished => ExtractionStatus == OpetionStatus.Finished;
-
-        public bool IsProcessing => ExtractionStatus == OpetionStatus.OptionProcessing;
+    //    /// <summary>
+    //    /// 获取或设置一个值，指示了当前解压操作是否正在暂停。
+    //    /// </summary>
+    //    public bool IsPausing => ExtractionStatus == OpetionStatus.Pausing;
 
 
-        private RelayCommand? pauseOption;
+    //    /// <summary>
+    //    /// 获取或设置一个值，指示了当前解压操作是否已暂停。
+    //    /// </summary>
+    //    public bool IsPaused => ExtractionStatus == OpetionStatus.Paused;
 
-        public RelayCommand PaussOptionCommand
-        {
-            get => pauseOption;
-            set => SetProperty(ref pauseOption, value);
-        }
+    //    /// <summary>
+    //    /// 获取或设置一个值，指示了正在取消（但还未完成取消）解压操作。
+    //    /// </summary>
+    //    public bool IsCancelling => ExtractionStatus == OpetionStatus.Cancelling;
 
-        private RelayCommand? cancelOption;
+    //    /// <summary>
+    //    /// 获取或设置一个值，指示了解压操作是否被取消。
+    //    /// </summary>
+    //    public bool IsCancelled => ExtractionStatus == OpetionStatus.Cancelled;
 
-        public RelayCommand CancelOptionCommand
-        {
-            get => cancelOption;
-            set => SetProperty(ref cancelOption, value);
-        }
+    //    /// <summary>
+    //    /// 获取或设置一个值，指示了解压操作是否完成。
+    //    /// </summary>
+    //    public bool IsFinished => ExtractionStatus == OpetionStatus.Finished;
 
-        public OptionModel()
-        {
-            this.PropertyChanged += OptionModel_PropertyChanged; 
-        }
+    //    public bool IsProcessing => ExtractionStatus == OpetionStatus.OptionProcessing;
 
-        private void OptionModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            switch (e.PropertyName)
-            {
-                case nameof(ExtractionStatus):
-                    OnPropertyChanged(nameof(IsPausing));
-                    OnPropertyChanged(nameof(IsPaused));
-                    OnPropertyChanged(nameof(IsCancelling));
-                    OnPropertyChanged(nameof(IsCancelled));
-                    OnPropertyChanged(nameof(IsProcessing));
-                    OnPropertyChanged(nameof(IsFinished));
-                    break;
-            }
-        }
-    }
+
+    //    private RelayCommand? pauseOption;
+
+    //    public RelayCommand PaussOptionCommand
+    //    {
+    //        get => pauseOption;
+    //        set => SetProperty(ref pauseOption, value);
+    //    }
+
+    //    private RelayCommand? cancelOption;
+
+    //    public RelayCommand CancelOptionCommand
+    //    {
+    //        get => cancelOption;
+    //        set => SetProperty(ref cancelOption, value);
+    //    }
+
+    //    public OptionModel()
+    //    {
+    //        this.PropertyChanged += OptionModel_PropertyChanged; 
+    //    }
+
+    //    private void OptionModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    //    {
+    //        switch (e.PropertyName)
+    //        {
+    //            case nameof(ExtractionStatus):
+    //                OnPropertyChanged(nameof(IsPausing));
+    //                OnPropertyChanged(nameof(IsPaused));
+    //                OnPropertyChanged(nameof(IsCancelling));
+    //                OnPropertyChanged(nameof(IsCancelled));
+    //                OnPropertyChanged(nameof(IsProcessing));
+    //                OnPropertyChanged(nameof(IsFinished));
+    //                break;
+    //        }
+    //    }
+    //}
 }

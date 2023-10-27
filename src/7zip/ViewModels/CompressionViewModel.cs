@@ -18,11 +18,9 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace _7zip.ViewModels
 {
-    internal partial class CompressionViewModel : ObservableObject
+    internal partial class CompressionViewModel : ProgressViewModelBase
     {
         SevenZipCompressor compressor = new();
-
-        OptionModel model = new OptionModel();
 
         [ObservableProperty]
         CompressionMode compressionMode = CompressionMode.Create;
@@ -108,15 +106,24 @@ namespace _7zip.ViewModels
 
         private void InitModel()
         {
-            model.OptionTitle = "压缩";
-            model.OptionProcessingText = "正在压缩";
-            model.SucceedText = "压缩成功";
-            model.PausingText = "正在暂停......";
-            model.PausedText = "压缩已暂停";
-            model.CancelText = "压缩已取消";
-            model.CancelingText = "正在取消......";
-            model.CancelOptionCommand = new RelayCommand(CancelFunction);
-            model.PaussOptionCommand = new RelayCommand(PauseFunction);
+            //model.OptionTitle = "压缩";
+            //model.OptionProcessingText = "正在压缩";
+            //model.SucceedText = "压缩成功";
+            //model.PausingText = "正在暂停......";
+            //model.PausedText = "压缩已暂停";
+            //model.CancelText = "压缩已取消";
+            //model.CancelingText = "正在取消......";
+            //model.CancelOptionCommand = new RelayCommand(CancelFunction);
+            //model.PaussOptionCommand = new RelayCommand(PauseFunction);
+            Title = "压缩";
+            TextManagementInfo.ProcessingText = "正在压缩";
+            TextManagementInfo.FinishedText = "压缩成功";
+            TextManagementInfo.PausingText = "正在暂停......";
+            TextManagementInfo.PausedText = "压缩已暂停";
+            TextManagementInfo.CancellingText = "正在取消......";
+            TextManagementInfo.CancelledText = "压缩已取消";
+            TogglePauseCommand = new RelayCommand(PauseFunction);
+            CancelCommand = new RelayCommand(CancelFunction);
         }
 
         private void CancelFunction()
